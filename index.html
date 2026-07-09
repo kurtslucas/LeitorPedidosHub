@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<!-- saved from url=(0038)file:///D:/Uteis/LeitorPedidosHub.html -->
-<html lang="pt-BR"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Hub Unificado - Leitor de Pedidos</title>
 <style>
@@ -285,8 +285,8 @@
     <div style="display:flex;gap:8px;align-items:center;">
       <div class="format-toggle">
         <span>Formato:</span>
-        <button class="btn btn-sm btn-toggle" id="btnFormatted" onclick="setFormatMode(true)">Formatado</button>
-        <button class="btn btn-sm btn-toggle active" id="btnRaw" onclick="setFormatMode(false)">Original</button>
+        <button class="btn btn-sm btn-toggle active" id="btnFormatted" onclick="setFormatMode(true)">Formatado</button>
+        <button class="btn btn-sm btn-toggle" id="btnRaw" onclick="setFormatMode(false)">Original</button>
       </div>
       <button class="btn btn-sm" onclick="exportAll()">Exportar todos</button>
       <button class="btn btn-danger btn-sm" onclick="clearAll()">Limpar tudo</button>
@@ -294,23 +294,24 @@
   </div>
 
   <div style="background:rgba(234,88,12,0.08);border:1px solid var(--accent-orange);border-radius:var(--radius-lg);padding:12px 16px;margin-bottom:16px;font-size:12px;color:var(--accent-orange);line-height:1.5;">
-    <strong>⚠ Aviso Legal:</strong> Esta é uma ferramenta de visualização não oficial dos hubs Lexos, Tray, Magis5, Plugg.To e BEES. Os dados exibidos são interpretados a partir de arquivos JSON fornecidos pelo usuário e podem conter imprecisões ou omissões. Não nos responsabilizamos por falhas de leitura, interpretação incorreta de dados ou quaisquer decisões tomadas com base nesta visualização. Para informações oficiais, consulte diretamente a plataforma do hub correspondente.
+    <strong>⚠ Aviso Legal:</strong> Esta é uma ferramenta de visualização não oficial dos hubs Lexos, Tray, Magis5, Plugg.To, BEES e Rep+. Os dados exibidos são interpretados a partir de arquivos JSON fornecidos pelo usuário e podem conter imprecisões ou omissões. Não nos responsabilizamos por falhas de leitura, interpretação incorreta de dados ou quaisquer decisões tomadas com base nesta visualização. Para informações oficiais, consulte diretamente a plataforma do hub correspondente.
   </div>
 
   <div class="hub-selector" id="hubSelector">
-    <button class="hub-btn" data-hub="Lexos" onclick="switchHub(&#39;Lexos&#39;)">Hub Lexos</button>
-    <button class="hub-btn" data-hub="tray" onclick="switchHub(&#39;tray&#39;)">Hub Tray</button>
-    <button class="hub-btn" data-hub="magis5" onclick="switchHub(&#39;magis5&#39;)">Hub Magis5</button>
-    <button class="hub-btn" data-hub="plugto" onclick="switchHub(&#39;plugto&#39;)">Hub Plugg.To</button>
-    <button class="hub-btn active" data-hub="bees" onclick="switchHub(&#39;bees&#39;)">Hub BEES</button>
+    <button class="hub-btn active" data-hub="Lexos" onclick="switchHub('Lexos')">Hub Lexos</button>
+    <button class="hub-btn" data-hub="tray" onclick="switchHub('tray')">Hub Tray</button>
+    <button class="hub-btn" data-hub="magis5" onclick="switchHub('magis5')">Hub Magis5</button>
+    <button class="hub-btn" data-hub="plugto" onclick="switchHub('plugto')">Hub Plugg.To</button>
+    <button class="hub-btn" data-hub="bees" onclick="switchHub('bees')">Hub BEES</button>
+    <button class="hub-btn" data-hub="repmais" onclick="switchHub('repmais')">Rep+</button>
   </div>
 
-  <div class="order-tabs" id="orderTabs"><div class="order-tab active" data-id="ord_1783614231460_8bkmuo" onclick="switchOrder(&#39;ord_1783614231460_8bkmuo&#39;)"><span>9228881926</span><span class="tab-close" onclick="event.stopPropagation();removeOrder(&#39;ord_1783614231460_8bkmuo&#39;)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"></path></svg></span></div><div class="order-tab " data-id="ord_1783614243489_xmp3xy" onclick="switchOrder(&#39;ord_1783614243489_xmp3xy&#39;)"><span>9320400634</span><span class="tab-close" onclick="event.stopPropagation();removeOrder(&#39;ord_1783614243489_xmp3xy&#39;)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"></path></svg></span></div><button class="add-tab-btn" onclick="showAddPanel()">+ Novo pedido</button></div>
+  <div class="order-tabs" id="orderTabs"></div>
 
-  <div id="ordersContainer"><div class="summary-bar"><div class="sum-item"><span class="sum-label">orderNumber</span><span class="sum-value mono">9228881926</span></div><div class="sum-item"><span class="sum-label">status</span><span class="sum-value"><span class="status-badge status-PLACED">PLACED</span></span></div><div class="sum-item"><span class="sum-label">previousStatus</span><span class="sum-value">PENDING</span></div><div class="sum-item"><span class="sum-label">channel</span><span class="sum-value">B2B_APP</span></div><div class="sum-item"><span class="sum-label">purchaseId</span><span class="sum-value">1000384991267</span></div><div class="sum-item"><span class="sum-label">total</span><span class="sum-value money"><span class="data-value">161.78</span></span></div><div class="sum-item"><span class="sum-label">placementDate</span><span class="sum-value">2025-06-02T16:02:57.220+00:00</span></div><div class="sum-item"><span class="sum-label">beesAccountId</span><span class="sum-value mono">11000343000172</span></div></div><div class="export-bar"><button class="btn btn-sm" onclick="exportOrder(&#39;ord_1783614231460_8bkmuo&#39;)">Exportar JSON</button></div><div class="inner-tabs"><button class="inner-tab active" data-tab="geral" onclick="switchInnerTab(&#39;geral&#39;)">Geral</button><button class="inner-tab " data-tab="invoicing" onclick="switchInnerTab(&#39;invoicing&#39;)">Invoicing</button><button class="inner-tab " data-tab="customer" onclick="switchInnerTab(&#39;customer&#39;)">Customer</button><button class="inner-tab " data-tab="delivery" onclick="switchInnerTab(&#39;delivery&#39;)">Delivery</button><button class="inner-tab " data-tab="items" onclick="switchInnerTab(&#39;items&#39;)">Items</button><button class="inner-tab " data-tab="summary" onclick="switchInnerTab(&#39;summary&#39;)">Summary</button><button class="inner-tab " data-tab="payment" onclick="switchInnerTab(&#39;payment&#39;)">Payment</button><button class="inner-tab " data-tab="payments" onclick="switchInnerTab(&#39;payments&#39;)">Payments</button><button class="inner-tab " data-tab="empties" onclick="switchInnerTab(&#39;empties&#39;)">Empties</button><button class="inner-tab " data-tab="vendor" onclick="switchInnerTab(&#39;vendor&#39;)">Vendor</button><button class="inner-tab " data-tab="orderinfo" onclick="switchInnerTab(&#39;orderinfo&#39;)">Order Info</button><button class="inner-tab " data-tab="combos" onclick="switchInnerTab(&#39;combos&#39;)">Combos</button><button class="inner-tab " data-tab="properties" onclick="switchInnerTab(&#39;properties&#39;)">Properties</button></div><div class="inner-content active" data-content="geral"><div class="fieldset"><div class="fieldset-title">dados gerais do pedido</div><div class="data-grid"><div class="data-item"><span class="data-label">orderNumber</span><span class="data-value">9228881926</span></div><div class="data-item"><span class="data-label">status</span><span class="data-value">PLACED</span></div><div class="data-item"><span class="data-label">previousStatus</span><span class="data-value">PENDING</span></div><div class="data-item"><span class="data-label">channel</span><span class="data-value">B2B_APP</span></div><div class="data-item"><span class="data-label">beesAccountId</span><span class="data-value">11000343000172</span></div><div class="data-item"><span class="data-label">purchaseId</span><span class="data-value">1000384991267</span></div><div class="data-item"><span class="data-label">placementDate</span><span class="data-value">2025-06-02T16:02:57.220+00:00</span></div><div class="data-item"><span class="data-label">deleted</span><span class="data-value bool-false">false</span></div></div></div><div class="fieldset"><div class="fieldset-title">audit</div><div class="data-grid"><div class="data-item"><span class="data-label">createAt</span><span class="data-value">2025-06-02T16:02:57.220Z</span></div><div class="data-item"><span class="data-label">updateAt</span><span class="data-value">2025-06-02T16:03:42.103Z</span></div></div></div></div><div class="inner-content" data-content="invoicing"><div class="fieldset"><div class="fieldset-title">invoicing</div><div class="data-grid"><div class="data-item"><span class="data-label">legalName</span><span class="data-value">MASSACHUSTER PIZZARIA LTDA</span></div><div class="data-item"><span class="data-label">displayName</span><span class="data-value">CABANA PIZZARIA</span></div><div class="data-item"><span class="data-label">email</span><span class="data-value">No E-mail</span></div><div class="data-item"><span class="data-label">phone</span><span class="data-value">2433562336</span></div><div class="data-item" style="grid-column:1/-1;"><span class="data-label">taxIds</span><table class="array-table"><thead><tr><th>type</th><th>value</th></tr></thead><tbody><tr><td>CNPJ</td><td>11000343000172</td></tr><tr><td>INSCRICAO_ESTADUAL</td><td>78811838</td></tr></tbody></table></div></div></div></div><div class="inner-content" data-content="customer"><div class="fieldset"><div class="fieldset-title">customerInfoPersonal</div><div class="data-grid"><div class="data-item"><span class="data-label">emailAddress</span><span class="data-value">rangelganso@hotmail.com</span></div><div class="data-item"><span class="data-label">familyName</span><span class="data-value">medeiros</span></div><div class="data-item"><span class="data-label">name</span><span class="data-value">rangel medeiros</span></div><div class="data-item"><span class="data-label">givenName</span><span class="data-value">rangel</span></div><div class="data-item"><span class="data-label">locale</span><span class="data-value">pt-BR</span></div></div></div></div><div class="inner-content" data-content="delivery"><div class="fieldset"><div class="fieldset-title">delivery</div><div class="data-grid"><div class="data-item"><span class="data-label">note</span><span class="data-value"></span></div><div class="data-item"><span class="data-label">deliveryCenterId</span><span class="data-value">RUVOLORJ</span></div><div class="data-item" style="grid-column:1/-1;"><span class="data-label">distributionCenters</span><div class="nested-object" style="margin-top:8px;"><div class="data-grid"><div class="data-item"><span class="data-label">id</span><span class="data-value">RUVOLORJ</span></div><div class="data-item"><span class="data-label">vendorId</span><span class="data-value">04fe3603-91fa-4330-8e5d-0af1646c1575</span></div><div class="data-item"><span class="data-label">minDays</span><span class="data-value">7</span></div><div class="data-item"><span class="data-label">maxDays</span><span class="data-value">11</span></div><div class="data-item"><span class="data-label">maxDate</span><span class="data-value">2025-06-13T16:02:57.162Z</span></div><div class="data-item"><span class="data-label">minDate</span><span class="data-value">2025-06-09T16:02:57.162Z</span></div><div class="data-item" style="grid-column:1/-1;"><span class="data-label">shippingDays</span><table class="array-table"><thead><tr><th>weekDay</th></tr></thead><tbody><tr><td>MONDAY</td></tr><tr><td>TUESDAY</td></tr><tr><td>WEDNESDAY</td></tr><tr><td>THURSDAY</td></tr><tr><td>FRIDAY</td></tr></tbody></table></div></div></div></div><div class="data-item" style="grid-column:1/-1;"><span class="data-label">location</span><div class="nested-object"><div class="data-item" style="margin-bottom:8px;"><span class="data-label">geoCoordinates</span><div class="nested-object"><div class="data-item" style="margin-bottom:8px;"><span class="data-label">latitude</span><span class="data-value">-22.521268</span></div><div class="data-item" style="margin-bottom:8px;"><span class="data-label">longitude</span><span class="data-value">-43.997755</span></div></div></div><div class="data-item" style="margin-bottom:8px;"><span class="data-label">city</span><span class="data-value">PINHEIRAL</span></div><div class="data-item" style="margin-bottom:8px;"><span class="data-label">neighborhood</span><span class="data-value">PARAISO</span></div><div class="data-item" style="margin-bottom:8px;"><span class="data-label">state</span><span class="data-value">RJ</span></div><div class="data-item" style="margin-bottom:8px;"><span class="data-label">number</span><span class="data-value">14</span></div><div class="data-item" style="margin-bottom:8px;"><span class="data-label">zipCode</span><span class="data-value">27000000</span></div><div class="data-item" style="margin-bottom:8px;"><span class="data-label">streetAddress</span><span class="data-value">BRASILIA, 14, PARAISO, PINHEIRAL, RJ</span></div></div></div><div class="data-item"><span class="data-label">multiOrigin</span><span class="data-value bool-false">false</span></div></div></div></div><div class="inner-content" data-content="items"><div class="fieldset"><div class="fieldset-title">item 1 - Copo Prestige On The Rocks Vidro 340ml Caixa c/ 24 un</div><div class="data-grid"><div class="data-item" style="grid-column:1/-1;"><span class="data-label">package</span><div class="nested-object"><div class="data-item" style="margin-bottom:8px;"><span class="data-label">itemCount</span><span class="data-value">24</span></div><div class="data-item" style="margin-bottom:8px;"><span class="data-label">packageId</span><span class="data-value">80731</span></div><div class="data-item" style="margin-bottom:8px;"><span class="data-label">unitCount</span><span class="data-value">1</span></div><div class="data-item" style="margin-bottom:8px;"><span class="data-label">name</span><span class="data-value">Caixa Papelão</span></div></div></div><div class="data-item" style="grid-column:1/-1;"><span class="data-label">dynamicAttributes</span><div class="nested-object"><div class="data-item" style="margin-bottom:8px;"><span class="data-label">sku</span><span class="data-value">80731</span></div></div></div><div class="data-item"><span class="data-label">key</span><span class="data-value">fc-4c10-9319-59cc77ecba_080731617810</span></div><div class="data-item"><span class="data-label">measureUnit</span><span class="data-value">kg</span></div><div class="data-item"><span class="data-label">typeOfUnit</span><span class="data-value">UN</span></div><div class="data-item" style="grid-column:1/-1;"><span class="data-label">uom</span><table class="array-table"><thead><tr><th>type</th><th>browsePrice</th><th>browsePriceInclDiscounts</th><th>price</th><th>total</th><th>subtotal</th><th>discountAmount</th><th>basePrice</th></tr></thead><tbody><tr><td>KG</td><td>0.9</td><td>0.8</td><td>0.82</td><td>0.8</td><td>0.73</td><td>0.1</td><td>0.82</td></tr><tr><td>UN</td><td>7.59</td><td>6.74</td><td>6.9</td><td>6.74</td><td><span class="null">null</span></td><td>0.85</td><td>6.9</td></tr><tr><td>PACK</td><td>182.08</td><td>161.79</td><td>165.53</td><td>161.78</td><td><span class="null">null</span></td><td>20.29</td><td>165.53</td></tr></tbody></table></div><div class="data-item" style="grid-column:1/-1;"><span class="data-label">summaryItem</span><div class="nested-object"><div class="data-item" style="margin-bottom:8px;"><span class="data-label">discount</span><span class="data-value">18.45</span></div><div class="data-item" style="margin-bottom:8px;"><span class="data-label">price</span><span class="data-value">161.79</span></div><div class="data-item" style="margin-bottom:8px;"><span class="data-label">originalPrice</span><span class="data-value">182.08</span></div><div class="data-item" style="margin-bottom:8px;"><span class="data-label">subtotal</span><span class="data-value">147.08</span></div><div class="data-item" style="margin-bottom:8px;"><span class="data-label">total</span><span class="data-value">161.78</span></div><div class="data-item" style="margin-bottom:8px;"><span class="data-label">taxes</span><span class="data-value">[object Object]</span></div><div class="data-item" style="margin-bottom:8px;"><span class="data-label">charges</span><span class="data-value"></span></div><div class="data-item" style="margin-bottom:8px;"><span class="data-label">discounts</span><span class="data-value">[object Object]</span></div><div class="data-item" style="margin-bottom:8px;"><span class="data-label">dynamicValues</span><div class="nested-object"><div class="data-item" style="margin-bottom:8px;"><span class="data-label">browsePricePerUoM</span><span class="data-value">0.73</span></div></div></div></div></div><div class="data-item" style="grid-column:1/-1;"><span class="data-label">container</span><div class="nested-object"><div class="data-item" style="margin-bottom:8px;"><span class="data-label">name</span><span class="data-value">Copo Prestige</span></div><div class="data-item" style="margin-bottom:8px;"><span class="data-label">unitOfMeasurement</span><span class="data-value">kg</span></div><div class="data-item" style="margin-bottom:8px;"><span class="data-label">itemSize</span><span class="data-value">8</span></div><div class="data-item" style="margin-bottom:8px;"><span class="data-label">returnable</span><span class="data-value bool-false">false</span></div><div class="data-item" style="margin-bottom:8px;"><span class="data-label">size</span><span class="data-value">8.4</span></div></div></div><div class="data-item"><span class="data-label">vendorItemId</span><span class="data-value">80731</span></div><div class="data-item"><span class="data-label">type</span><span class="data-value">REGULAR</span></div><div class="data-item"><span class="data-label">quantity</span><span class="data-value">1</span></div><div class="data-item" style="grid-column:1/-1;"><span class="data-label">deliveryCenterItemDetail</span><span class="data-value null">[]</span></div><div class="data-item"><span class="data-label">itemClassification</span><span class="data-value">REGULAR</span></div><div class="data-item" style="grid-column:1/-1;"><span class="data-label">image</span><span class="data-value img-preview"><img class="img-thumb" src="./index_files/01-15-2025-9c5b8fcd-3640-4177-a641-79917e8db91c-3a852306.png" alt="" onerror="this.style.display=&#39;none&#39;">https://cms-prod.global.ssl.fastly.net/media/01-15-2025-9c5b8fcd-3640-4177-a641-79917e8db91c-3a852306.png</span></div><div class="data-item"><span class="data-label">name</span><span class="data-value">Copo Prestige On The Rocks Vidro 340ml Caixa c/ 24 un</span></div><div class="data-item"><span class="data-label">sku</span><span class="data-value">80731</span></div></div></div></div><div class="inner-content" data-content="summary"><div class="fieldset"><div class="fieldset-title">summary</div><div class="data-grid"><div class="data-item"><span class="data-label">discount</span><span class="data-value">18.45</span></div><div class="data-item"><span class="data-label">subtotal</span><span class="data-value">147.08</span></div><div class="data-item"><span class="data-label">total</span><span class="data-value">161.78</span></div><div class="data-item" style="grid-column:1/-1;"><span class="data-label">taxes</span><table class="array-table"><thead><tr><th>id</th><th>value</th></tr></thead><tbody><tr><td>DIFAL</td><td>14.71</td></tr></tbody></table></div><div class="data-item" style="grid-column:1/-1;"><span class="data-label">charges</span><span class="data-value null">[]</span></div><div class="data-item" style="grid-column:1/-1;"><span class="data-label">aggregateAmount</span><span class="data-value null">[]</span></div><div class="data-item" style="grid-column:1/-1;"><span class="data-label">dynamicValues</span><div class="nested-object"><div class="data-item" style="margin-bottom:8px;"><span class="data-label">deposit</span><span class="data-value">0</span></div></div></div><div class="data-item"><span class="data-label">browseSubtotal</span><span class="data-value">161.78</span></div><div class="data-item"><span class="data-label">browseDiscountAmount</span><span class="data-value">20.3</span></div></div></div></div><div class="inner-content" data-content="payment"><div class="fieldset"><div class="fieldset-title">payment</div><div class="data-grid"><div class="data-item" style="grid-column:1/-1;"><span class="data-label">translations</span><table class="array-table"><thead><tr><th>locale</th><th>description</th><th>subDescription</th></tr></thead><tbody><tr><td>pt-BR</td><td>PAGUE ANTES DO ENVIO! Para envio do seu pedido, é necessário pagamento antecipado. Instruções e link de pagamento serão enviadas pelo Whatsapp (11) 98104-5315 e bees@ruvolo.com.br</td><td></td></tr></tbody></table></div><div class="data-item" style="grid-column:1/-1;"><span class="data-label">dynamicAttributes</span><div class="nested-object"><div class="data-item" style="margin-bottom:8px;"><span class="data-label">paymentMethodCode</span><span class="data-value">CASH</span></div><div class="data-item" style="margin-bottom:8px;"><span class="data-label">transactionReferenceId</span><span class="data-value"></span></div></div></div><div class="data-item"><span class="data-label">paymentMethod</span><span class="data-value">CASH</span></div><div class="data-item"><span class="data-label">paymentMethodCode</span><span class="data-value">CASH</span></div></div></div></div><div class="inner-content" data-content="payments"><div class="fieldset"><div class="fieldset-title">payments</div><div class="data-grid"><div class="data-item" style="grid-column:1/-1;"><span class="data-label">dynamicAttributes</span><div class="nested-object"><div class="data-item" style="margin-bottom:8px;"><span class="data-label">paymentMethodCode</span><span class="data-value">CASH</span></div><div class="data-item" style="margin-bottom:8px;"><span class="data-label">transactionReferenceId</span><span class="data-value"></span></div></div></div><div class="data-item" style="grid-column:1/-1;"><span class="data-label">methods</span><div class="nested-object" style="margin-top:8px;"><div class="data-grid"><div class="data-item" style="grid-column:1/-1;"><span class="data-label">translations</span><table class="array-table"><thead><tr><th>locale</th><th>description</th><th>subDescription</th></tr></thead><tbody><tr><td>pt-BR</td><td>PAGUE ANTES DO ENVIO! Para envio do seu pedido, é necessário pagamento antecipado. Instruções e link de pagamento serão enviadas pelo Whatsapp (11) 98104-5315 e bees@ruvolo.com.br</td><td></td></tr></tbody></table></div><div class="data-item"><span class="data-label">paymentMethod</span><span class="data-value">CASH</span></div><div class="data-item"><span class="data-label">paymentTerm</span><span class="data-value null">null</span></div><div class="data-item"><span class="data-label">paymentMethodCode</span><span class="data-value">CASH</span></div><div class="data-item"><span class="data-label">monetaryAmount</span><span class="data-value">161.78</span></div><div class="data-item"><span class="data-label">nonMonetaryAmount</span><span class="data-value null">null</span></div><div class="data-item"><span class="data-label">receiptUrl</span><span class="data-value null">null</span></div><div class="data-item"><span class="data-label">transactionReferenceId</span><span class="data-value null">null</span></div><div class="data-item"><span class="data-label">financialCategoryId</span><span class="data-value null">null</span></div><div class="data-item"><span class="data-label">installments</span><span class="data-value null">null</span></div></div></div></div></div></div></div><div class="inner-content" data-content="empties"><div class="fieldset"><div class="fieldset-title">empties</div><div class="data-grid"><div class="data-item"><span class="data-label">extraAmount</span><span class="data-value null">null</span></div><div class="data-item"><span class="data-label">discountForExtraEmpties</span><span class="data-value null">null</span></div><div class="data-item"><span class="data-label">hasEmpties</span><span class="data-value bool-false">false</span></div><div class="data-item"><span class="data-label">minimumRequired</span><span class="data-value null">null</span></div><div class="data-item"><span class="data-label">totalAmount</span><span class="data-value null">null</span></div></div></div></div><div class="inner-content" data-content="vendor"><div class="fieldset"><div class="fieldset-title">vendor</div><div class="data-grid"><div class="data-item" style="grid-column:1/-1;"><span class="data-label">image</span><span class="data-value img-preview"><img class="img-thumb" src="./index_files/06-04-2024-RuvoloPNG-793e953a.png" alt="" onerror="this.style.display=&#39;none&#39;">https://cms-prod.global.ssl.fastly.net/media/06-04-2024-RuvoloPNG-793e953a.png</span></div><div class="data-item"><span class="data-label">id</span><span class="data-value">04fe3603-91fa-4330-8e5d-0af1646c1575</span></div></div></div></div><div class="inner-content" data-content="orderinfo"><div class="fieldset"><div class="fieldset-title">orderGenericInfo</div><div class="data-grid"><div class="data-item" style="grid-column:1/-1;"><span class="data-label">dynamicAttributes</span><div class="nested-object"></div></div><div class="data-item"><span class="data-label">poNumber</span><span class="data-value"></span></div></div></div></div><div class="inner-content" data-content="combos"><div class="empty-state">Nenhum combo.</div></div><div class="inner-content" data-content="properties"><div class="fieldset"><div class="fieldset-title">orderProperties</div><div class="data-grid"><div class="data-item"><span class="data-label">prop 1</span><span class="data-value">REGULAR</span></div></div></div></div></div>
+  <div id="ordersContainer"></div>
 
-  <div class="empty-state" id="emptyState" style="display: none;">
-    <svg viewBox="0 0 24 24"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+  <div class="empty-state" id="emptyState">
+    <svg viewBox="0 0 24 24"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
     <div class="empty-state-title">Nenhum pedido carregado</div>
     <div class="empty-state-sub">Clique em "+ Novo pedido" para adicionar um JSON.</div>
   </div>
@@ -333,6 +334,7 @@ function detectHub(data) {
   if (data.id !== undefined && data.buyer !== undefined) return 'magis5';
   if (data.id !== undefined && data.storeId !== undefined) return 'magis5';
   if (data.orderNumber !== undefined && data.beesAccountId !== undefined) return 'bees';
+  if (data.id !== undefined && data.repmaisCanal !== undefined) return 'repmais';
   return null;
 }
 
@@ -351,6 +353,9 @@ function validateHub(data, hub) {
   }
   if (hub === 'bees') {
     return data.orderNumber !== undefined && data.beesAccountId !== undefined;
+  }
+  if (hub === 'repmais') {
+    return data.id !== undefined && data.repmaisCanal !== undefined;
   }
   return false;
 }
@@ -477,6 +482,7 @@ function getOrderLabel(o) {
     return order.original_id || (order.id ? String(order.id).slice(-8) : 'Pedido');
   }
   if (o._hub === 'bees') return o.orderNumber || ('Pedido ' + o.purchaseId);
+  if (o._hub === 'repmais') return o.chave || o.idExterno || ('Pedido ' + o.id);
   return 'Pedido';
 }
 
@@ -512,7 +518,7 @@ function addOrderFromText() {
   try {
     var data = JSON.parse(text);
     var detectedHub = detectHub(data);
-    if (!detectedHub) { alert('JSON nao reconhecido como pedido de nenhum hub suportado (Lexos, Tray ou Magis5).'); return; }
+    if (!detectedHub) { alert('JSON nao reconhecido como pedido de nenhum hub suportado.'); return; }
     if (detectedHub !== currentHub) {
       if (!confirm('Este pedido parece ser do Hub ' + detectedHub.toUpperCase() + '. Deseja mudar para esse hub e carregar o pedido?')) return;
       currentHub = detectedHub;
@@ -539,7 +545,7 @@ function addOrderFromFile(file) {
     try {
       var data = JSON.parse(e.target.result);
       var detectedHub = detectHub(data);
-      if (!detectedHub) { alert('JSON nao reconhecido como pedido de nenhum hub suportado (Lexos, Tray ou Magis5).'); return; }
+      if (!detectedHub) { alert('JSON nao reconhecido como pedido de nenhum hub suportado.'); return; }
       if (detectedHub !== currentHub) {
         if (!confirm('Este pedido parece ser do Hub ' + detectedHub.toUpperCase() + '. Deseja mudar para esse hub e carregar o pedido?')) return;
         currentHub = detectedHub;
@@ -639,6 +645,7 @@ function renderContent() {
   else if (o._hub === 'magis5') renderMagis5(o, container);
   else if (o._hub === 'plugto') renderPlugto(o, container);
   else if (o._hub === 'bees') renderBees(o, container);
+  else if (o._hub === 'repmais') renderRepMais(o, container);
 }
 
 // ===== Lexos RENDERER =====
@@ -1760,6 +1767,322 @@ function renderBees(o, container) {
   container.innerHTML = summaryHtml + innerTabsHtml + contentsHtml;
 }
 
+// ===== REP+ RENDERER =====
+function renderRepMais(o, container) {
+  var summaryHtml =
+    '<div class="summary-bar">' +
+      '<div class="sum-item"><span class="sum-label">id</span><span class="sum-value">' + escapeHtml(String(o.id || '—')) + '</span></div>' +
+      '<div class="sum-item"><span class="sum-label">idExterno</span><span class="sum-value mono">' + escapeHtml(o.idExterno || '—') + '</span></div>' +
+      '<div class="sum-item"><span class="sum-label">chave</span><span class="sum-value mono">' + escapeHtml(o.chave || '—') + '</span></div>' +
+      '<div class="sum-item"><span class="sum-label">statusPedido</span><span class="sum-value"><span class="status-badge ' + getStatusClass(o.statusPedido) + '">' + escapeHtml(o.statusPedido || '—') + '</span></span></div>' +
+      '<div class="sum-item"><span class="sum-label">repmaisCanal</span><span class="sum-value">' + escapeHtml(o.repmaisCanal || '—') + '</span></div>' +
+      '<div class="sum-item"><span class="sum-label">valorTotal</span><span class="sum-value money">' + fmtVal(o.valorTotal, 'valorTotal') + '</span></div>' +
+      '<div class="sum-item"><span class="sum-label">dataCriacao</span><span class="sum-value">' + escapeHtml(o.dataCriacao || '—') + '</span></div>' +
+      '<div class="sum-item"><span class="sum-label">nomeComprador</span><span class="sum-value">' + escapeHtml(o.nomeComprador || '—') + '</span></div>' +
+    '</div>' +
+    '<div class="export-bar"><button class="btn btn-sm" onclick="exportOrder(\'' + o._id + '\')">Exportar JSON</button></div>';
+
+  var tabs = [
+    {id:'geral',label:'Geral'},
+    {id:'cliente',label:'Cliente'},
+    {id:'representada',label:'Representada'},
+    {id:'agente',label:'Agente Comercial'},
+    {id:'transacao',label:'Transação'},
+    {id:'itens',label:'Itens'},
+    {id:'valores',label:'Valores'},
+    {id:'pagamento',label:'Pagamento'},
+    {id:'fidelidade',label:'Fidelidade'},
+    {id:'fluxo',label:'Fluxo Etapa'},
+    {id:'atributos',label:'Atributos Gerais'},
+    {id:'transporte',label:'Transporte'},
+    {id:'observacoes',label:'Observações'},
+    {id:'prazos',label:'Prazos'},
+    {id:'usoInterno',label:'Uso Interno'},
+    {id:'triangular',label:'Op. Triangular'},
+    {id:'anexos',label:'Anexos'}
+  ];
+
+  var innerTabsHtml = '<div class="inner-tabs">';
+  tabs.forEach(function(t, i) {
+    innerTabsHtml += '<button class="inner-tab ' + (i===0?'active':'') + '" data-tab="' + t.id + '" onclick="switchInnerTab(\'' + t.id + '\')">' + t.label + '</button>';
+  });
+  innerTabsHtml += '</div>';
+
+  var contentsHtml = '';
+
+  // Helper to render entity with documentos
+  function renderEntityWithDocs(entity, title) {
+    if (!entity || !Object.keys(entity).length) return '<div class="empty-state">Nenhum dado.</div>';
+    var html = '<div class="fieldset"><div class="fieldset-title">' + title + '</div><div class="data-grid">';
+    Object.keys(entity).forEach(function(k) {
+      var v = entity[k];
+      if (k === 'documentos' && Array.isArray(v)) {
+        html += '<div class="data-item" style="grid-column:1/-1;"><span class="data-label">documentos</span>' + (v.length ? renderArrayTable(v) : '<span class="data-value null">[]</span>') + '</div>';
+      } else if (k === 'grupoEconomico' && v && typeof v === 'object') {
+        html += '<div class="data-item" style="grid-column:1/-1;"><span class="data-label">grupoEconomico</span>' + renderNestedBlock(v, k) + '</div>';
+      } else if (k === 'transportadora' && v && typeof v === 'object') {
+        html += '<div class="data-item" style="grid-column:1/-1;"><span class="data-label">transportadora</span>' + renderNestedBlock(v, k) + '</div>';
+      } else {
+        html += '<div class="data-item"><span class="data-label">' + k + '</span>' + fmtVal(v, k) + '</div>';
+      }
+    });
+    html += '</div></div>';
+    return html;
+  }
+
+  // Geral tab
+  var geralFields = ['id','idExterno','chave','dataCriacao','dataSolicEntrega','dataPrevistaEntrega','dataSolicFaturamento','repmaisCanal','tipoFrete','freteCalculo','freteAplicacao','freteAplicacaoValor','freteValor','isProgramado','chaveCliente','chaveClienteDataExpiracao','fidelidadePercentual','comissaoValorBase','comissaoPercentual','comissaoValor','valorMargem','nomeComprador','permiteEntregaParcial','prazoMedio','qtdVolumes','volumesM3','percentDescontoComercial','percDescFinanceiro','valorBruto','valorDescComercial','valorTotal','valorImpostos','valorDescFinanceiro','valorContabil','statusPedido','qtdItens','pesoBrutoTotal','pesoLiquidoTotal','comissaoAdicionalCliente','precosTabelaVrTotal','percDescontoGlobal','valorDescontoFiscal','lastUpdate','dataIntegracao','horaIntegracao','isAceitaEntregaParcial'];
+  contentsHtml += '<div class="inner-content active" data-content="geral"><div class="fieldset"><div class="fieldset-title">dados gerais do pedido</div><div class="data-grid">';
+  geralFields.forEach(function(k) {
+    contentsHtml += '<div class="data-item"><span class="data-label">' + k + '</span>' + fmtVal(o[k], k) + '</div>';
+  });
+  contentsHtml += '</div></div>';
+  // if (o.horaIntegracao && Object.keys(o.horaIntegracao).length) {
+  //   contentsHtml += '<div class="fieldset"><div class="fieldset-title">horaIntegracao</div><div class="data-grid">';
+  //   Object.keys(o.horaIntegracao).forEach(function(k) {
+  //     contentsHtml += '<div class="data-item"><span class="data-label">' + k + '</span>' + fmtVal(o.horaIntegracao[k], k) + '</div>';
+  //   });
+  //   contentsHtml += '</div></div>';
+  // }
+  contentsHtml += '</div>';
+
+  // Cliente tab
+  contentsHtml += '<div class="inner-content" data-content="cliente">' + renderEntityWithDocs(o.cliente, 'cliente') + '</div>';
+
+  // Representada tab
+  contentsHtml += '<div class="inner-content" data-content="representada">' + renderEntityWithDocs(o.representada, 'representada') + '</div>';
+
+  // Agente Comercial tab
+  contentsHtml += '<div class="inner-content" data-content="agente">';
+  if (o.agenteComercial && Object.keys(o.agenteComercial).length) {
+    contentsHtml += '<div class="fieldset"><div class="fieldset-title">agenteComercial</div><div class="data-grid">';
+    Object.keys(o.agenteComercial).forEach(function(k) {
+      contentsHtml += '<div class="data-item"><span class="data-label">' + k + '</span>' + fmtVal(o.agenteComercial[k], k) + '</div>';
+    });
+    contentsHtml += '</div></div>';
+  } else {
+    contentsHtml += '<div class="empty-state">Nenhum dado do agente comercial.</div>';
+  }
+  contentsHtml += '</div>';
+
+  // Transação tab
+  contentsHtml += '<div class="inner-content" data-content="transacao">';
+  if (o.transacao && Object.keys(o.transacao).length) {
+    contentsHtml += '<div class="fieldset"><div class="fieldset-title">transacao</div><div class="data-grid">';
+    Object.keys(o.transacao).forEach(function(k) {
+      contentsHtml += '<div class="data-item"><span class="data-label">' + k + '</span>' + fmtVal(o.transacao[k], k) + '</div>';
+    });
+    contentsHtml += '</div></div>';
+  } else {
+    contentsHtml += '<div class="empty-state">Nenhum dado da transação.</div>';
+  }
+  contentsHtml += '</div>';
+
+  // Itens tab
+  contentsHtml += '<div class="inner-content" data-content="itens">';
+  if (o.ordensItens && o.ordensItens.length) {
+    o.ordensItens.forEach(function(item, idx) {
+      contentsHtml += '<div class="fieldset"><div class="fieldset-title">item ' + (idx+1) + ' - ' + escapeHtml((item.produto && item.produto.descricao) || '') + '</div><div class="data-grid">';
+      Object.keys(item).forEach(function(k) {
+        var v = item[k];
+        if (k === 'produto' && v && typeof v === 'object') {
+          contentsHtml += '<div class="data-item" style="grid-column:1/-1;"><span class="data-label">produto</span>' + renderNestedBlock(v, k) + '</div>';
+        } else if (k === 'embalagem' && v && typeof v === 'object') {
+          contentsHtml += '<div class="data-item" style="grid-column:1/-1;"><span class="data-label">embalagem</span>' + renderNestedBlock(v, k) + '</div>';
+        } else if (k === 'tabelaPreco' && v && typeof v === 'object') {
+          contentsHtml += '<div class="data-item" style="grid-column:1/-1;"><span class="data-label">tabelaPreco</span>' + renderNestedBlock(v, k) + '</div>';
+        } else if ((k === 'ipi' || k === 'iva' || k === 'icms') && Array.isArray(v)) {
+          contentsHtml += '<div class="data-item" style="grid-column:1/-1;"><span class="data-label">' + k + '</span>';
+          v.forEach(function(tax, tidx) {
+            contentsHtml += '<div class="nested-object" style="margin-top:8px;"><div class="data-grid">';
+            Object.keys(tax).forEach(function(tk) {
+              var tv = tax[tk];
+              if ((tk === 'ipi' || tk === 'iva' || tk === 'icms') && tv && typeof tv === 'object') {
+                contentsHtml += '<div class="data-item" style="grid-column:1/-1;"><span class="data-label">' + tk + '</span>' + renderNestedBlock(tv, tk) + '</div>';
+              } else {
+                contentsHtml += '<div class="data-item"><span class="data-label">' + tk + '</span>' + fmtVal(tv, tk) + '</div>';
+              }
+            });
+            contentsHtml += '</div></div>';
+          });
+          contentsHtml += '</div>';
+        } else if (k === 'atributosGerais' && v && typeof v === 'object') {
+          contentsHtml += '<div class="data-item" style="grid-column:1/-1;"><span class="data-label">atributosGerais</span>';
+          contentsHtml += '<div class="nested-object"><div class="data-grid">';
+          Object.keys(v).forEach(function(ak) {
+            var av = v[ak];
+            if (ak === 'orgUsuPapProposta' && av && typeof av === 'object') {
+              contentsHtml += '<div class="data-item" style="grid-column:1/-1;"><span class="data-label">orgUsuPapProposta</span>' + renderNestedBlock(av, ak) + '</div>';
+            } else {
+              contentsHtml += '<div class="data-item"><span class="data-label">' + ak + '</span>' + fmtVal(av, ak) + '</div>';
+            }
+          });
+          contentsHtml += '</div></div></div>';
+        } else {
+          contentsHtml += '<div class="data-item"><span class="data-label">' + k + '</span>' + fmtVal(v, k) + '</div>';
+        }
+      });
+      contentsHtml += '</div></div>';
+    });
+  } else {
+    contentsHtml += '<div class="empty-state">Nenhum item no pedido.</div>';
+  }
+  contentsHtml += '</div>';
+
+  // Valores tab
+  contentsHtml += '<div class="inner-content" data-content="valores"><div class="fieldset"><div class="fieldset-title">valores do pedido</div><div class="data-grid">';
+  var valorFields = ['valorBruto','valorDescComercial','valorTotal','valorImpostos','valorDescFinanceiro','valorContabil','percentDescontoComercial','percDescFinanceiro','percDescontoGlobal','valorDescontoFiscal','comissaoValorBase','comissaoPercentual','comissaoValor','valorMargem','comissaoAdicionalCliente','precosTabelaVrTotal','freteCalculo','freteAplicacaoValor','freteValor'];
+  valorFields.forEach(function(k) {
+    contentsHtml += '<div class="data-item"><span class="data-label">' + k + '</span>' + fmtVal(o[k], k) + '</div>';
+  });
+  contentsHtml += '</div></div></div>';
+
+  // Pagamento tab
+  contentsHtml += '<div class="inner-content" data-content="pagamento">';
+  if (o.formaPagamento && Object.keys(o.formaPagamento).length) {
+    contentsHtml += '<div class="fieldset"><div class="fieldset-title">formaPagamento</div><div class="data-grid">';
+    Object.keys(o.formaPagamento).forEach(function(k) {
+      contentsHtml += '<div class="data-item"><span class="data-label">' + k + '</span>' + fmtVal(o.formaPagamento[k], k) + '</div>';
+    });
+    contentsHtml += '</div></div>';
+  } else {
+    contentsHtml += '<div class="empty-state">Nenhuma forma de pagamento.</div>';
+  }
+  if (o.condicaoPagamento && Object.keys(o.condicaoPagamento).length) {
+    contentsHtml += '<div class="fieldset"><div class="fieldset-title">condicaoPagamento</div><div class="data-grid">';
+    Object.keys(o.condicaoPagamento).forEach(function(k) {
+      contentsHtml += '<div class="data-item"><span class="data-label">' + k + '</span>' + fmtVal(o.condicaoPagamento[k], k) + '</div>';
+    });
+    contentsHtml += '</div></div>';
+  }
+  contentsHtml += '<div class="fieldset"><div class="fieldset-title">indices</div><div class="data-grid">';
+  ['indiceCondicao','condicaoValor'].forEach(function(k) {
+    contentsHtml += '<div class="data-item"><span class="data-label">' + k + '</span>' + fmtVal(o[k], k) + '</div>';
+  });
+  contentsHtml += '</div></div></div>';
+
+  // Fidelidade tab
+  contentsHtml += '<div class="inner-content" data-content="fidelidade">';
+  if (o.fidelidade && Object.keys(o.fidelidade).length) {
+    contentsHtml += '<div class="fieldset"><div class="fieldset-title">fidelidade</div><div class="data-grid">';
+    Object.keys(o.fidelidade).forEach(function(k) {
+      contentsHtml += '<div class="data-item"><span class="data-label">' + k + '</span>' + fmtVal(o.fidelidade[k], k) + '</div>';
+    });
+    contentsHtml += '</div></div>';
+  } else {
+    contentsHtml += '<div class="empty-state">Nenhum programa de fidelidade.</div>';
+  }
+  contentsHtml += '</div>';
+
+  // Fluxo Etapa tab
+  contentsHtml += '<div class="inner-content" data-content="fluxo">';
+  if (o.fluxoEtapa && Object.keys(o.fluxoEtapa).length) {
+    contentsHtml += '<div class="fieldset"><div class="fieldset-title">fluxoEtapa</div><div class="data-grid">';
+    Object.keys(o.fluxoEtapa).forEach(function(k) {
+      contentsHtml += '<div class="data-item"><span class="data-label">' + k + '</span>' + fmtVal(o.fluxoEtapa[k], k) + '</div>';
+    });
+    contentsHtml += '</div></div>';
+  } else {
+    contentsHtml += '<div class="empty-state">Nenhum fluxo de etapa.</div>';
+  }
+  contentsHtml += '</div>';
+
+  // Atributos Gerais tab
+  contentsHtml += '<div class="inner-content" data-content="atributos">';
+  if (o.atributosGerais && Object.keys(o.atributosGerais).length) {
+    contentsHtml += '<div class="fieldset"><div class="fieldset-title">atributosGerais</div><div class="data-grid">';
+    Object.keys(o.atributosGerais).forEach(function(k) {
+      contentsHtml += '<div class="data-item"><span class="data-label">' + k + '</span>' + fmtVal(o.atributosGerais[k], k) + '</div>';
+    });
+    contentsHtml += '</div></div>';
+  } else {
+    contentsHtml += '<div class="empty-state">Nenhum atributo geral.</div>';
+  }
+  contentsHtml += '</div>';
+
+  // Transporte tab
+  contentsHtml += '<div class="inner-content" data-content="transporte">';
+  if (o.transportadora && Object.keys(o.transportadora).length) {
+    contentsHtml += '<div class="fieldset"><div class="fieldset-title">transportadora</div><div class="data-grid">';
+    Object.keys(o.transportadora).forEach(function(k) {
+      contentsHtml += '<div class="data-item"><span class="data-label">' + k + '</span>' + fmtVal(o.transportadora[k], k) + '</div>';
+    });
+    contentsHtml += '</div></div>';
+  } else {
+    contentsHtml += '<div class="empty-state">Nenhuma transportadora.</div>';
+  }
+  if (o.tabelaPreco && Object.keys(o.tabelaPreco).length) {
+    contentsHtml += '<div class="fieldset"><div class="fieldset-title">tabelaPreco</div><div class="data-grid">';
+    Object.keys(o.tabelaPreco).forEach(function(k) {
+      contentsHtml += '<div class="data-item"><span class="data-label">' + k + '</span>' + fmtVal(o.tabelaPreco[k], k) + '</div>';
+    });
+    contentsHtml += '</div></div>';
+  }
+  contentsHtml += '</div>';
+
+  // Observações tab
+  contentsHtml += '<div class="inner-content" data-content="observacoes">';
+  if (o.observacoes && o.observacoes.length) {
+    o.observacoes.forEach(function(obs, idx) {
+      contentsHtml += '<div class="fieldset"><div class="fieldset-title">observação ' + (idx+1) + '</div><div class="data-grid">';
+      Object.keys(obs).forEach(function(k) {
+        var v = obs[k];
+        if (k === 'tipoObservacaoPersonalizada' && v && typeof v === 'object') {
+          contentsHtml += '<div class="data-item" style="grid-column:1/-1;"><span class="data-label">tipoObservacaoPersonalizada</span>' + renderNestedBlock(v, k) + '</div>';
+        } else {
+          contentsHtml += '<div class="data-item"><span class="data-label">' + k + '</span>' + fmtVal(v, k) + '</div>';
+        }
+      });
+      contentsHtml += '</div></div>';
+    });
+  } else {
+    contentsHtml += '<div class="empty-state">Nenhuma observação.</div>';
+  }
+  contentsHtml += '</div>';
+
+  // Prazos tab
+  contentsHtml += '<div class="inner-content" data-content="prazos">';
+  if (o.ordensPrazos && o.ordensPrazos.length) {
+    contentsHtml += renderArrayTable(o.ordensPrazos);
+  } else {
+    contentsHtml += '<div class="empty-state">Nenhum prazo.</div>';
+  }
+  contentsHtml += '</div>';
+
+  // Uso Interno tab
+  contentsHtml += '<div class="inner-content" data-content="usoInterno">';
+  if (o.usoInterno && Object.keys(o.usoInterno).length) {
+    contentsHtml += '<div class="fieldset"><div class="fieldset-title">usoInterno</div><div class="data-grid">';
+    Object.keys(o.usoInterno).forEach(function(k) {
+      contentsHtml += '<div class="data-item"><span class="data-label">' + k + '</span>' + fmtVal(o.usoInterno[k], k) + '</div>';
+    });
+    contentsHtml += '</div></div>';
+  } else {
+    contentsHtml += '<div class="empty-state">Nenhum dado de uso interno.</div>';
+  }
+  contentsHtml += '</div>';
+
+  // Op. Triangular tab
+  contentsHtml += '<div class="inner-content" data-content="triangular">';
+  if (o.clienteFinalOpTriangular && Object.keys(o.clienteFinalOpTriangular).length) {
+    contentsHtml += renderEntityWithDocs(o.clienteFinalOpTriangular, 'clienteFinalOpTriangular');
+  } else {
+    contentsHtml += '<div class="empty-state">Nenhuma operação triangular.</div>';
+  }
+  contentsHtml += '</div>';
+
+  // Anexos tab
+  contentsHtml += '<div class="inner-content" data-content="anexos">';
+  if (o.anexos && o.anexos.length) {
+    contentsHtml += renderArrayTable(o.anexos);
+  } else {
+    contentsHtml += '<div class="empty-state">Nenhum anexo.</div>';
+  }
+  contentsHtml += '</div>';
+
+  container.innerHTML = summaryHtml + innerTabsHtml + contentsHtml;
+}
+
 // ===== HELPERS =====
 function renderNestedBlock(obj, parentKey) {
   if (!obj || typeof obj !== 'object') return fmtVal(obj, parentKey);
@@ -1857,5 +2180,5 @@ function handleFileSelect(e) {
 
 loadOrders();
 </script>
-
-</body></html>
+</body>
+</html>
