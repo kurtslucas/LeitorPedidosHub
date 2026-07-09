@@ -354,7 +354,7 @@
   </div>
 
   <div style="background:rgba(234,88,12,0.08);border:1px solid var(--accent-orange);border-radius:var(--radius-lg);padding:12px 16px;margin-bottom:16px;font-size:12px;color:var(--accent-orange);line-height:1.5;">
-    <strong>⚠ Aviso Legal:</strong> Esta é uma ferramenta de visualização não oficial dos hubs Lexos, Tray, Magis5, Plugg.To, BEES e Rep+. Os dados exibidos são interpretados a partir de arquivos JSON fornecidos pelo usuário e podem conter imprecisões ou omissões. Não nos responsabilizamos por falhas de leitura, interpretação incorreta de dados ou quaisquer decisões tomadas com base nesta visualização. Para informações oficiais, consulte diretamente a plataforma do hub correspondente.
+    <strong>⚠ Aviso Legal:</strong> Esta é uma ferramenta de visualização não oficial dos hubs Lexos, Tray, Magis5, Plugg.To, BEES, Rep+ e B2B (Magento). Os dados exibidos são interpretados a partir de arquivos JSON fornecidos pelo usuário e podem conter imprecisões ou omissões. Não nos responsabilizamos por falhas de leitura, interpretação incorreta de dados ou quaisquer decisões tomadas com base nesta visualização. Para informações oficiais, consulte diretamente a plataforma do hub correspondente.
   </div>
 
   <div class="hub-selector" id="hubSelector">
@@ -364,6 +364,7 @@
     <button class="hub-btn" data-hub="plugto" onclick="switchHub('plugto')">Hub Plugg.To</button>
     <button class="hub-btn" data-hub="bees" onclick="switchHub('bees')">Hub BEES</button>
     <button class="hub-btn" data-hub="repmais" onclick="switchHub('repmais')">Rep+</button>
+    <button class="hub-btn" data-hub="b2b" onclick="switchHub('b2b')">B2B (Magento)</button>
   </div>
 
   <div class="order-tabs" id="orderTabs"></div>
@@ -400,6 +401,7 @@ function detectHub(data) {
   if (data.id !== undefined && data.storeId !== undefined) return 'magis5';
   if (data.orderNumber !== undefined && data.beesAccountId !== undefined) return 'bees';
   if (data.id !== undefined && data.repmaisCanal !== undefined) return 'repmais';
+  if (data.increment_id !== undefined && data.entity_id !== undefined && data.items !== undefined && data.billing_address !== undefined) return 'b2b';
   return null;
 }
 
@@ -421,6 +423,9 @@ function validateHub(data, hub) {
   }
   if (hub === 'repmais') {
     return data.id !== undefined && data.repmaisCanal !== undefined;
+  }
+  if (hub === 'b2b') {
+    return data.increment_id !== undefined && data.entity_id !== undefined;
   }
   return false;
 }
@@ -711,6 +716,7 @@ function renderContent() {
   else if (o._hub === 'plugto') renderPlugto(o, container);
   else if (o._hub === 'bees') renderBees(o, container);
   else if (o._hub === 'repmais') renderRepMais(o, container);
+  else if (o._hub === 'b2b') renderB2B(o, container);
 }
 
 // ===== Lexos RENDERER =====
@@ -2142,6 +2148,252 @@ function renderRepMais(o, container) {
     contentsHtml += renderArrayTable(o.anexos);
   } else {
     contentsHtml += '<div class="empty-state">Nenhum anexo.</div>';
+  }
+  contentsHtml += '</div>';
+
+  container.innerHTML = summaryHtml + innerTabsHtml + contentsHtml;
+}
+
+// ===== B2B (MAGENTO) RENDERER =====
+function renderB2B(o, container) {
+  var summaryHtml =
+    '<div class="summary-bar">' +
+      '<div class="sum-item"><span class="sum-label">increment_id</span><span class="sum-value mono">' + escapeHtml(o.increment_id || '—') + '</span></div>' +
+      '<div class="sum-item"><span class="sum-label">entity_id</span><span class="sum-value">' + escapeHtml(String(o.entity_id || '—')) + '</span></div>' +
+      '<div class="sum-item"><span class="sum-label">status</span><span class="sum-value"><span class="status-badge ' + getStatusClass(o.status) + '">' + escapeHtml(o.status || '—') + '</span></span></div>' +
+      '<div class="sum-item"><span class="sum-label">state</span><span class="sum-value">' + escapeHtml(o.state || '—') + '</span></div>' +
+      '<div class="sum-item"><span class="sum-label">customer</span><span class="sum-value">' + escapeHtml((o.customer_firstname || '') + ' ' + (o.customer_lastname || '')) + '</span></div>' +
+      '<div class="sum-item"><span class="sum-label">grand_total</span><span class="sum-value money">' + fmtVal(o.grand_total, 'grand_total') + '</span></div>' +
+      '<div class="sum-item"><span class="sum-label">total_paid</span><span class="sum-value money">' + fmtVal(o.total_paid, 'total_paid') + '</span></div>' +
+      '<div class="sum-item"><span class="sum-label">created_at</span><span class="sum-value">' + escapeHtml(o.created_at || '—') + '</span></div>' +
+      '<div class="sum-item"><span class="sum-label">customer_email</span><span class="sum-value">' + escapeHtml(o.customer_email || '—') + '</span></div>' +
+      '<div class="sum-item"><span class="sum-label">customer_taxvat</span><span class="sum-value mono">' + escapeHtml(o.customer_taxvat || '—') + '</span></div>' +
+      '<div class="sum-item"><span class="sum-label">total_qty_ordered</span><span class="sum-value">' + escapeHtml(String(o.total_qty_ordered || '—')) + '</span></div>' +
+      '<div class="sum-item"><span class="sum-label">payment_method</span><span class="sum-value">' + escapeHtml((o.payment && o.payment.method) || '—') + '</span></div>' +
+    '</div>' +
+    '<div class="export-bar"><button class="btn btn-sm btn-report" onclick="exportReport(\'' + o._id + '\')">📄 Exportar Relatório</button><button class="btn btn-sm" onclick="exportOrder(\'' + o._id + '\')">Exportar JSON</button></div>';
+
+  var tabs = [
+    {id:'geral',label:'Geral'},
+    {id:'totais',label:'Totais'},
+    {id:'cliente',label:'Cliente'},
+    {id:'endereco_cobranca',label:'End. Cobrança'},
+    {id:'endereco_entrega',label:'End. Entrega'},
+    {id:'itens',label:'Itens'},
+    {id:'pagamento',label:'Pagamento'},
+    {id:'envio',label:'Envio'},
+    {id:'historico',label:'Histórico Status'},
+    {id:'extensoes',label:'Extensões'}
+  ];
+
+  var innerTabsHtml = '<div class="inner-tabs">';
+  tabs.forEach(function(t, i) {
+    innerTabsHtml += '<button class="inner-tab ' + (i===0?'active':'') + '" data-tab="' + t.id + '" onclick="switchInnerTab(\'' + t.id + '\')">' + t.label + '</button>';
+  });
+  innerTabsHtml += '</div>';
+
+  var contentsHtml = '';
+
+  // ===== GERAL =====
+  var geralFields = ['increment_id','entity_id','status','state','created_at','updated_at','customer_email','customer_firstname','customer_lastname','customer_id','customer_group_id','customer_is_guest','customer_taxvat','customer_note_notify','store_id','store_name','order_currency_code','global_currency_code','base_currency_code','quote_id','remote_ip','protect_code','is_virtual','email_sent','coupon_code'];
+  contentsHtml += '<div class="inner-content active" data-content="geral"><div class="fieldset"><div class="fieldset-title">dados gerais do pedido</div><div class="data-grid">';
+  geralFields.forEach(function(k) {
+    contentsHtml += '<div class="data-item"><span class="data-label">' + k + '</span>' + fmtVal(o[k], k) + '</div>';
+  });
+  contentsHtml += '</div></div></div>';
+
+  // ===== TOTAIS =====
+  var totaisFields = ['subtotal','subtotal_incl_tax','subtotal_invoiced','base_subtotal','base_subtotal_incl_tax','base_subtotal_invoiced','discount_amount','discount_invoiced','discount_description','base_discount_amount','base_discount_invoiced','shipping_amount','shipping_incl_tax','shipping_invoiced','shipping_tax_amount','base_shipping_amount','base_shipping_incl_tax','base_shipping_invoiced','base_shipping_tax_amount','tax_amount','tax_invoiced','base_tax_amount','base_tax_invoiced','grand_total','base_grand_total','total_due','base_total_due','total_paid','base_total_paid','total_invoiced','base_total_invoiced','base_total_invoiced_cost','total_item_count','total_qty_ordered','weight'];
+  contentsHtml += '<div class="inner-content" data-content="totais"><div class="fieldset"><div class="fieldset-title">totais do pedido</div><div class="data-grid">';
+  totaisFields.forEach(function(k) {
+    contentsHtml += '<div class="data-item"><span class="data-label">' + k + '</span>' + fmtVal(o[k], k) + '</div>';
+  });
+  contentsHtml += '</div></div>';
+  // Taxas e ajustes
+  var taxFields = ['base_to_global_rate','base_to_order_rate','store_to_base_rate','store_to_order_rate'];
+  contentsHtml += '<div class="fieldset"><div class="fieldset-title">taxas de conversão</div><div class="data-grid">';
+  taxFields.forEach(function(k) {
+    contentsHtml += '<div class="data-item"><span class="data-label">' + k + '</span>' + fmtVal(o[k], k) + '</div>';
+  });
+  contentsHtml += '</div></div></div>';
+
+  // ===== CLIENTE =====
+  contentsHtml += '<div class="inner-content" data-content="cliente"><div class="fieldset"><div class="fieldset-title">dados do cliente</div><div class="data-grid">';
+  var clienteFields = ['customer_id','customer_group_id','customer_email','customer_firstname','customer_lastname','customer_is_guest','customer_taxvat','customer_note_notify'];
+  clienteFields.forEach(function(k) {
+    contentsHtml += '<div class="data-item"><span class="data-label">' + k + '</span>' + fmtVal(o[k], k) + '</div>';
+  });
+  contentsHtml += '</div></div></div>';
+
+  // ===== ENDEREÇO COBRANÇA =====
+  contentsHtml += '<div class="inner-content" data-content="endereco_cobranca">';
+  if (o.billing_address && Object.keys(o.billing_address).length) {
+    contentsHtml += '<div class="fieldset"><div class="fieldset-title">endereço de cobrança</div><div class="data-grid">';
+    Object.keys(o.billing_address).forEach(function(k) {
+      var v = o.billing_address[k];
+      if (k === 'street' && Array.isArray(v)) {
+        contentsHtml += '<div class="data-item" style="grid-column:1/-1;"><span class="data-label">street</span><span class="data-value">' + escapeHtml(v.join(' | ')) + '</span></div>';
+      } else {
+        contentsHtml += '<div class="data-item"><span class="data-label">' + k + '</span>' + fmtVal(v, k) + '</div>';
+      }
+    });
+    contentsHtml += '</div></div>';
+  } else {
+    contentsHtml += '<div class="empty-state">Nenhum endereço de cobrança.</div>';
+  }
+  contentsHtml += '</div>';
+
+  // ===== ENDEREÇO ENTREGA =====
+  contentsHtml += '<div class="inner-content" data-content="endereco_entrega">';
+  var shippingAddr = null;
+  if (o.extension_attributes && o.extension_attributes.shipping_assignments && o.extension_attributes.shipping_assignments.length) {
+    shippingAddr = o.extension_attributes.shipping_assignments[0].shipping.address;
+  }
+  if (shippingAddr && Object.keys(shippingAddr).length) {
+    contentsHtml += '<div class="fieldset"><div class="fieldset-title">endereço de entrega</div><div class="data-grid">';
+    Object.keys(shippingAddr).forEach(function(k) {
+      var v = shippingAddr[k];
+      if (k === 'street' && Array.isArray(v)) {
+        contentsHtml += '<div class="data-item" style="grid-column:1/-1;"><span class="data-label">street</span><span class="data-value">' + escapeHtml(v.join(' | ')) + '</span></div>';
+      } else {
+        contentsHtml += '<div class="data-item"><span class="data-label">' + k + '</span>' + fmtVal(v, k) + '</div>';
+      }
+    });
+    contentsHtml += '</div></div>';
+  } else {
+    contentsHtml += '<div class="empty-state">Nenhum endereço de entrega.</div>';
+  }
+  contentsHtml += '</div>';
+
+  // ===== ITENS =====
+  contentsHtml += '<div class="inner-content" data-content="itens">';
+  if (o.items && o.items.length) {
+    o.items.forEach(function(item, idx) {
+      contentsHtml += '<div class="fieldset"><div class="fieldset-title">item ' + (idx+1) + ' - ' + escapeHtml(item.name || '') + '</div><div class="data-grid">';
+      Object.keys(item).forEach(function(k) {
+        var v = item[k];
+        if (k === 'extension_attributes' && v && typeof v === 'object') {
+          contentsHtml += '<div class="data-item" style="grid-column:1/-1;"><span class="data-label">extension_attributes</span>' + renderNestedBlock(v, k) + '</div>';
+        } else {
+          contentsHtml += '<div class="data-item"><span class="data-label">' + k + '</span>' + fmtVal(v, k) + '</div>';
+        }
+      });
+      contentsHtml += '</div></div>';
+    });
+  } else {
+    contentsHtml += '<div class="empty-state">Nenhum item no pedido.</div>';
+  }
+  contentsHtml += '</div>';
+
+  // ===== PAGAMENTO =====
+  contentsHtml += '<div class="inner-content" data-content="pagamento">';
+  if (o.payment && Object.keys(o.payment).length) {
+    contentsHtml += '<div class="fieldset"><div class="fieldset-title">pagamento</div><div class="data-grid">';
+    Object.keys(o.payment).forEach(function(k) {
+      var v = o.payment[k];
+      if (k === 'additional_information' && Array.isArray(v)) {
+        contentsHtml += '<div class="data-item" style="grid-column:1/-1;"><span class="data-label">additional_information</span><span class="data-value">' + escapeHtml(v.join(' | ')) + '</span></div>';
+      } else {
+        contentsHtml += '<div class="data-item"><span class="data-label">' + k + '</span>' + fmtVal(v, k) + '</div>';
+      }
+    });
+    contentsHtml += '</div></div>';
+  } else {
+    contentsHtml += '<div class="empty-state">Nenhum pagamento registrado.</div>';
+  }
+  contentsHtml += '</div>';
+
+  // ===== ENVIO =====
+  contentsHtml += '<div class="inner-content" data-content="envio">';
+  if (o.extension_attributes && o.extension_attributes.shipping_assignments && o.extension_attributes.shipping_assignments.length) {
+    var sa = o.extension_attributes.shipping_assignments[0];
+    contentsHtml += '<div class="fieldset"><div class="fieldset-title">método de envio</div><div class="data-grid">';
+    contentsHtml += '<div class="data-item"><span class="data-label">method</span>' + fmtVal(sa.shipping.method, 'method') + '</div>';
+    contentsHtml += '<div class="data-item"><span class="data-label">shipping_description</span>' + fmtVal(o.shipping_description, 'shipping_description') + '</div>';
+    contentsHtml += '</div></div>';
+    if (sa.shipping.total && Object.keys(sa.shipping.total).length) {
+      contentsHtml += '<div class="fieldset"><div class="fieldset-title">totais de envio</div><div class="data-grid">';
+      Object.keys(sa.shipping.total).forEach(function(k) {
+        contentsHtml += '<div class="data-item"><span class="data-label">' + k + '</span>' + fmtVal(sa.shipping.total[k], k) + '</div>';
+      });
+      contentsHtml += '</div></div>';
+    }
+    // ITENS DO ENVIO em cards verticais (igual aba Itens)
+    if (sa.items && sa.items.length) {
+      sa.items.forEach(function(item, idx) {
+        contentsHtml += '<div class="fieldset"><div class="fieldset-title">item do envio ' + (idx+1) + ' - ' + escapeHtml(item.name || '') + '</div><div class="data-grid">';
+        Object.keys(item).forEach(function(k) {
+          var v = item[k];
+          if (k === 'extension_attributes' && v && typeof v === 'object') {
+            contentsHtml += '<div class="data-item" style="grid-column:1/-1;"><span class="data-label">extension_attributes</span>' + renderNestedBlock(v, k) + '</div>';
+          } else {
+            contentsHtml += '<div class="data-item"><span class="data-label">' + k + '</span>' + fmtVal(v, k) + '</div>';
+          }
+        });
+        contentsHtml += '</div></div>';
+      });
+    }
+  } else {
+    contentsHtml += '<div class="empty-state">Nenhum envio registrado.</div>';
+  }
+  contentsHtml += '</div>';
+
+  // ===== HISTÓRICO STATUS =====
+  contentsHtml += '<div class="inner-content" data-content="historico">';
+  if (o.status_histories && o.status_histories.length) {
+    contentsHtml += renderArrayTable(o.status_histories);
+  } else {
+    contentsHtml += '<div class="empty-state">Nenhum histórico de status.</div>';
+  }
+  contentsHtml += '</div>';
+
+  // ===== EXTENSÕES =====
+  contentsHtml += '<div class="inner-content" data-content="extensoes">';
+  if (o.extension_attributes && Object.keys(o.extension_attributes).length) {
+    var ext = o.extension_attributes;
+    // shipping_assignments já renderizado em Envio, pular ou mostrar resumo
+    if (ext.payment_additional_info && ext.payment_additional_info.length) {
+      contentsHtml += '<div class="fieldset"><div class="fieldset-title">payment_additional_info</div>' + renderArrayTable(ext.payment_additional_info) + '</div>';
+    }
+    if (ext.applied_taxes && ext.applied_taxes.length) {
+      contentsHtml += '<div class="fieldset"><div class="fieldset-title">applied_taxes</div>' + renderArrayTable(ext.applied_taxes) + '</div>';
+    }
+    if (ext.item_applied_taxes && ext.item_applied_taxes.length) {
+      contentsHtml += '<div class="fieldset"><div class="fieldset-title">item_applied_taxes</div>' + renderArrayTable(ext.item_applied_taxes) + '</div>';
+    }
+    if (ext.taxes && ext.taxes.length) {
+      contentsHtml += '<div class="fieldset"><div class="fieldset-title">taxes</div>' + renderArrayTable(ext.taxes) + '</div>';
+    }
+    if (ext.additional_itemized_taxes && ext.additional_itemized_taxes.length) {
+      contentsHtml += '<div class="fieldset"><div class="fieldset-title">additional_itemized_taxes</div>' + renderArrayTable(ext.additional_itemized_taxes) + '</div>';
+    }
+    // Campos simples
+    contentsHtml += '<div class="fieldset"><div class="fieldset-title">campos adicionais</div><div class="data-grid">';
+    ['ipi','st','suframa_value','paymentfee','customer_id','direct_payment_id','converting_from_quote'].forEach(function(k) {
+      if (ext[k] !== undefined) {
+        contentsHtml += '<div class="data-item"><span class="data-label">' + k + '</span>' + fmtVal(ext[k], k) + '</div>';
+      }
+    });
+    contentsHtml += '</div></div>';
+    if (ext.mp_reward && Object.keys(ext.mp_reward).length) {
+      contentsHtml += '<div class="fieldset"><div class="fieldset-title">mp_reward</div><div class="data-grid">';
+      Object.keys(ext.mp_reward).forEach(function(k) {
+        contentsHtml += '<div class="data-item"><span class="data-label">' + k + '</span>' + fmtVal(ext.mp_reward[k], k) + '</div>';
+      });
+      contentsHtml += '</div></div>';
+    }
+    if (ext.mp_ca_address_attributes && ext.mp_ca_address_attributes.length) {
+      ext.mp_ca_address_attributes.forEach(function(addrSet, idx) {
+        if (addrSet.billing_address && addrSet.billing_address.length) {
+          contentsHtml += '<div class="fieldset"><div class="fieldset-title">mp_ca_address_attributes - billing_address ' + (idx+1) + '</div>' + renderArrayTable(addrSet.billing_address) + '</div>';
+        }
+        if (addrSet.shipping_address && addrSet.shipping_address.length) {
+          contentsHtml += '<div class="fieldset"><div class="fieldset-title">mp_ca_address_attributes - shipping_address ' + (idx+1) + '</div>' + renderArrayTable(addrSet.shipping_address) + '</div>';
+        }
+      });
+    }
+  } else {
+    contentsHtml += '<div class="empty-state">Nenhuma extensão registrada.</div>';
   }
   contentsHtml += '</div>';
 
