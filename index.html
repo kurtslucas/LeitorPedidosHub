@@ -1,0 +1,1861 @@
+<!DOCTYPE html>
+<!-- saved from url=(0038)file:///D:/Uteis/LeitorPedidosHub.html -->
+<html lang="pt-BR"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hub Unificado - Leitor de Pedidos</title>
+<style>
+  :root {
+    --bg-page: #f5f7fa;
+    --bg-panel: #ffffff;
+    --bg-muted: #f0f2f5;
+    --border-color: #d1d5db;
+    --text-primary: #1f2937;
+    --text-secondary: #6b7280;
+    --text-tertiary: #9ca3af;
+    --text-quaternary: #d1d5db;
+    --accent-blue: #2563eb;
+    --accent-green: #16a34a;
+    --accent-red: #dc2626;
+    --accent-orange: #ea580c;
+    --accent-purple: #8b5cf6;
+    --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --font-mono: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace;
+    --radius-sm: 6px;
+    --radius-md: 8px;
+    --radius-lg: 10px;
+    --t-fast: 0.15s;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg-page: #111827;
+      --bg-panel: #1f2937;
+      --bg-muted: #374151;
+      --border-color: #4b5563;
+      --text-primary: #f9fafb;
+      --text-secondary: #d1d5db;
+      --text-tertiary: #9ca3af;
+      --text-quaternary: #6b7280;
+    }
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: var(--font-sans);
+    background: var(--bg-page);
+    color: var(--text-primary);
+    padding: 16px;
+    min-height: 100vh;
+  }
+  .wrap { max-width: 1400px; margin: 0 auto; }
+  .top-bar {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 16px; flex-wrap: wrap; gap: 12px;
+  }
+  .top-bar h1 { font-size: 20px; font-weight: 600; }
+  .btn {
+    padding: 8px 16px; border: 1px solid var(--border-color); border-radius: var(--radius-md);
+    background: var(--bg-panel); color: var(--text-primary); cursor: pointer;
+    font-family: inherit; font-size: 13px; transition: all var(--t-fast) ease-out;
+  }
+  .btn:hover { background: var(--bg-muted); }
+  .btn-primary {
+    background: var(--text-primary); color: var(--bg-panel); border-color: var(--text-primary);
+  }
+  .btn-primary:hover { opacity: 0.85; }
+  .btn-danger { color: var(--accent-red); border-color: var(--accent-red); }
+  .btn-danger:hover { background: rgba(220,38,38,0.08); }
+  .btn-sm { padding: 6px 12px; font-size: 12px; }
+  .btn-toggle {
+    background: var(--bg-muted); border: 1px solid var(--border-color);
+  }
+  .btn-toggle.active {
+    background: var(--text-primary); color: var(--bg-panel); border-color: var(--text-primary);
+  }
+
+  .hub-selector {
+    display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap;
+  }
+  .hub-btn {
+    padding: 10px 20px; border: 2px solid var(--border-color); border-radius: var(--radius-lg);
+    background: var(--bg-panel); cursor: pointer; font-size: 14px; font-weight: 600;
+    transition: all var(--t-fast); color: var(--text-secondary);
+  }
+  .hub-btn:hover { border-color: var(--text-primary); color: var(--text-primary); }
+  .hub-btn.active {
+    border-color: var(--text-primary); color: var(--text-primary);
+    background: var(--bg-muted);
+  }
+
+  .order-tabs {
+    display: flex; gap: 4px; margin-bottom: 16px; flex-wrap: wrap; align-items: center;
+    border-bottom: 1px solid var(--border-color); padding-bottom: 0;
+  }
+  .order-tab {
+    padding: 8px 16px; border: 1px solid var(--border-color); border-bottom: none;
+    border-radius: var(--radius-md) var(--radius-md) 0 0;
+    background: var(--bg-muted); cursor: pointer; font-size: 13px;
+    position: relative; display: flex; align-items: center; gap: 8px;
+    transition: all var(--t-fast) ease-out; color: var(--text-secondary);
+  }
+  .order-tab:hover { background: var(--bg-panel); color: var(--text-primary); }
+  .order-tab.active {
+    background: var(--bg-panel); color: var(--text-primary);
+    border-top: 3px solid var(--text-primary); font-weight: 600;
+  }
+  .order-tab .tab-close {
+    opacity: 0; transition: opacity var(--t-fast);
+    width: 18px; height: 18px; display: flex; align-items: center;
+    justify-content: center; border-radius: 4px; cursor: pointer;
+    color: var(--text-tertiary);
+  }
+  .order-tab:hover .tab-close { opacity: 1; }
+  .tab-close:hover { background: rgba(220,38,38,0.12); color: var(--accent-red); }
+  .add-tab-btn {
+    padding: 8px 14px; border: 1px dashed var(--border-color);
+    border-radius: var(--radius-md); background: transparent; cursor: pointer;
+    font-size: 13px; color: var(--text-secondary); transition: all var(--t-fast);
+    margin-bottom: 1px;
+  }
+  .add-tab-btn:hover { border-color: var(--text-primary); color: var(--text-primary); }
+
+  .summary-bar {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 10px; margin-bottom: 20px; padding: 16px;
+    border: 1px solid var(--border-color); border-radius: var(--radius-lg);
+    background: var(--bg-muted);
+  }
+  .sum-item { display: flex; flex-direction: column; gap: 3px; }
+  .sum-label { font-size: 11px; color: var(--text-tertiary); letter-spacing: 0.02em; }
+  .sum-value { font-size: 14px; font-weight: 600; word-break: break-word; }
+  .sum-value.money { font-variant-numeric: tabular-nums; font-feature-settings: "tnum" 1; }
+  .status-badge {
+    display: inline-block; padding: 3px 10px; border-radius: var(--radius-sm);
+    font-size: 11px; font-weight: 600;
+  }
+  .status-pagamento_confirmado { background: rgba(234,88,12,0.12); color: var(--accent-orange); }
+  .status-completo, .status-entregue, .status-FATURADO, .status-approved { background: rgba(22,163,74,0.12); color: var(--accent-green); }
+  .status-cancelado, .status-canceled { background: rgba(220,38,38,0.12); color: var(--accent-red); }
+  .status-separar { background: rgba(37,99,235,0.12); color: var(--accent-blue); }
+  .status-awaiting_payment { background: rgba(234,88,12,0.12); color: var(--accent-orange); }
+  .status-processing, .status-shipped { background: rgba(37,99,235,0.12); color: var(--accent-blue); }
+  .status-handling { background: rgba(139,92,246,0.12); color: var(--accent-purple); }
+
+  .inner-tabs {
+    display: flex; gap: 2px; margin-bottom: 0;
+    border-bottom: 1px solid var(--border-color); flex-wrap: wrap;
+  }
+  .inner-tab {
+    padding: 10px 18px; border: none; background: transparent; cursor: pointer;
+    font-size: 13px; color: var(--text-secondary);
+    border-bottom: 2px solid transparent; transition: all var(--t-fast);
+    font-family: inherit;
+  }
+  .inner-tab:hover { color: var(--text-primary); }
+  .inner-tab.active {
+    color: var(--text-primary); border-bottom-color: var(--text-primary); font-weight: 600;
+  }
+
+  .inner-content { display: none; padding: 20px 0; }
+  .inner-content.active { display: block; }
+
+  .fieldset {
+    border: 1px solid var(--border-color); border-radius: var(--radius-lg);
+    padding: 20px; margin-bottom: 20px; background: var(--bg-panel);
+  }
+  .fieldset-title {
+    font-size: 14px; font-weight: 600; color: var(--text-primary);
+    margin-bottom: 16px; padding-bottom: 10px;
+    border-bottom: 1px solid var(--border-color);
+  }
+  .data-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px;
+  }
+  .data-item { display: flex; flex-direction: column; gap: 3px; }
+  .data-label {
+    font-size: 11px; color: var(--text-tertiary);
+    letter-spacing: 0.02em;
+  }
+  .data-value {
+    font-size: 13px; color: var(--text-primary); word-break: break-word;
+    min-height: 20px; line-height: 1.4;
+  }
+  .data-value.null { color: var(--text-quaternary); font-style: italic; }
+  .data-value.mono { font-family: var(--font-mono); font-size: 12px; }
+  .data-value.money { font-variant-numeric: tabular-nums; font-feature-settings: "tnum" 1; }
+  .data-value.img-preview {
+    display: flex; align-items: center; gap: 10px;
+  }
+  .img-thumb {
+    width: 40px; height: 40px; border-radius: 6px;
+    object-fit: cover; border: 1px solid var(--border-color);
+  }
+
+  .array-table {
+    width: 100%; border-collapse: collapse; font-size: 13px;
+    border: 1px solid var(--border-color); border-radius: var(--radius-lg); overflow: hidden;
+  }
+  .array-table th, .array-table td {
+    border: 1px solid var(--border-color); padding: 10px 12px; text-align: left;
+  }
+  .array-table th {
+    background: var(--bg-muted); font-size: 11px; font-weight: 600;
+    color: var(--text-secondary); letter-spacing: 0.02em;
+  }
+  .array-table tr:hover { background: var(--bg-muted); }
+  .array-table td .null { color: var(--text-quaternary); font-style: italic; }
+  .array-table td .bool-true { color: var(--accent-green); font-weight: 600; }
+  .array-table td .bool-false { color: var(--accent-red); font-weight: 600; }
+  .array-table td .money { font-variant-numeric: tabular-nums; font-feature-settings: "tnum" 1; }
+
+  .empty-state {
+    text-align: center; padding: 60px 20px; color: var(--text-tertiary);
+  }
+  .empty-state svg {
+    width: 56px; height: 56px; margin-bottom: 16px; opacity: 0.35;
+    stroke: currentColor; fill: none; stroke-width: 1.5;
+  }
+  .empty-state-title { font-size: 16px; font-weight: 600; margin-bottom: 6px; color: var(--text-secondary); }
+  .empty-state-sub { font-size: 14px; }
+
+  .drop-zone {
+    border: 2px dashed var(--border-color); border-radius: var(--radius-lg);
+    padding: 32px; text-align: center; cursor: pointer;
+    transition: all var(--t-fast); margin-bottom: 16px; background: var(--bg-panel);
+  }
+  .drop-zone:hover, .drop-zone.dragover {
+    border-color: var(--text-primary); background: var(--bg-muted);
+  }
+  .drop-zone-text { font-size: 15px; color: var(--text-secondary); font-weight: 500; }
+  .drop-zone-sub { font-size: 13px; color: var(--text-tertiary); margin-top: 6px; }
+  input[type="file"] { display: none; }
+  .json-input {
+    width: 100%; min-height: 140px;
+    border: 1px solid var(--border-color); border-radius: var(--radius-lg);
+    padding: 14px; font-family: var(--font-mono); font-size: 12px;
+    resize: vertical; background: var(--bg-panel); color: var(--text-primary);
+    line-height: 1.5;
+  }
+  .json-input:focus { outline: none; border-color: var(--text-primary); }
+  .json-input::placeholder { color: var(--text-quaternary); }
+
+  .actions-row { display: flex; gap: 10px; margin-top: 14px; justify-content: flex-end; flex-wrap: wrap; }
+
+  .nested-object {
+    border: 1px solid var(--border-color); border-radius: var(--radius-md);
+    padding: 16px; margin-bottom: 12px; background: var(--bg-panel);
+  }
+
+  .bool-true { color: var(--accent-green); font-weight: 600; }
+  .bool-false { color: var(--accent-red); font-weight: 600; }
+
+  .export-bar {
+    display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 16px;
+  }
+
+  .format-toggle {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; color: var(--text-secondary);
+  }
+
+  .toast {
+    position: fixed; bottom: 24px; right: 24px;
+    padding: 12px 20px; border-radius: var(--radius-lg);
+    background: var(--text-primary); color: var(--bg-panel);
+    font-size: 13px; font-weight: 500; box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    opacity: 0; transform: translateY(12px); transition: all 0.3s ease;
+    pointer-events: none; z-index: 1000;
+  }
+  .toast.show { opacity: 1; transform: translateY(0); }
+
+  @media (max-width: 640px) {
+    .summary-bar { grid-template-columns: repeat(2, 1fr); }
+    .data-grid { grid-template-columns: 1fr; }
+    .top-bar { flex-direction: column; align-items: flex-start; }
+    .order-tabs { overflow-x: auto; flex-wrap: nowrap; }
+    .order-tab { white-space: nowrap; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap" id="app">
+  
+  <div class="top-bar">
+    <h1>Hub Unificado - Leitor de Pedidos</h1>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <div class="format-toggle">
+        <span>Formato:</span>
+        <button class="btn btn-sm btn-toggle" id="btnFormatted" onclick="setFormatMode(true)">Formatado</button>
+        <button class="btn btn-sm btn-toggle active" id="btnRaw" onclick="setFormatMode(false)">Original</button>
+      </div>
+      <button class="btn btn-sm" onclick="exportAll()">Exportar todos</button>
+      <button class="btn btn-danger btn-sm" onclick="clearAll()">Limpar tudo</button>
+    </div>
+  </div>
+
+  <div style="background:rgba(234,88,12,0.08);border:1px solid var(--accent-orange);border-radius:var(--radius-lg);padding:12px 16px;margin-bottom:16px;font-size:12px;color:var(--accent-orange);line-height:1.5;">
+    <strong>⚠ Aviso Legal:</strong> Esta é uma ferramenta de visualização não oficial dos hubs Lexos, Tray, Magis5, Plugg.To e BEES. Os dados exibidos são interpretados a partir de arquivos JSON fornecidos pelo usuário e podem conter imprecisões ou omissões. Não nos responsabilizamos por falhas de leitura, interpretação incorreta de dados ou quaisquer decisões tomadas com base nesta visualização. Para informações oficiais, consulte diretamente a plataforma do hub correspondente.
+  </div>
+
+  <div class="hub-selector" id="hubSelector">
+    <button class="hub-btn" data-hub="Lexos" onclick="switchHub(&#39;Lexos&#39;)">Hub Lexos</button>
+    <button class="hub-btn" data-hub="tray" onclick="switchHub(&#39;tray&#39;)">Hub Tray</button>
+    <button class="hub-btn" data-hub="magis5" onclick="switchHub(&#39;magis5&#39;)">Hub Magis5</button>
+    <button class="hub-btn" data-hub="plugto" onclick="switchHub(&#39;plugto&#39;)">Hub Plugg.To</button>
+    <button class="hub-btn active" data-hub="bees" onclick="switchHub(&#39;bees&#39;)">Hub BEES</button>
+  </div>
+
+  <div class="order-tabs" id="orderTabs"><div class="order-tab active" data-id="ord_1783614231460_8bkmuo" onclick="switchOrder(&#39;ord_1783614231460_8bkmuo&#39;)"><span>9228881926</span><span class="tab-close" onclick="event.stopPropagation();removeOrder(&#39;ord_1783614231460_8bkmuo&#39;)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"></path></svg></span></div><div class="order-tab " data-id="ord_1783614243489_xmp3xy" onclick="switchOrder(&#39;ord_1783614243489_xmp3xy&#39;)"><span>9320400634</span><span class="tab-close" onclick="event.stopPropagation();removeOrder(&#39;ord_1783614243489_xmp3xy&#39;)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"></path></svg></span></div><button class="add-tab-btn" onclick="showAddPanel()">+ Novo pedido</button></div>
+
+  <div id="ordersContainer"><div class="summary-bar"><div class="sum-item"><span class="sum-label">orderNumber</span><span class="sum-value mono">9228881926</span></div><div class="sum-item"><span class="sum-label">status</span><span class="sum-value"><span class="status-badge status-PLACED">PLACED</span></span></div><div class="sum-item"><span class="sum-label">previousStatus</span><span class="sum-value">PENDING</span></div><div class="sum-item"><span class="sum-label">channel</span><span class="sum-value">B2B_APP</span></div><div class="sum-item"><span class="sum-label">purchaseId</span><span class="sum-value">1000384991267</span></div><div class="sum-item"><span class="sum-label">total</span><span class="sum-value money"><span class="data-value">161.78</span></span></div><div class="sum-item"><span class="sum-label">placementDate</span><span class="sum-value">2025-06-02T16:02:57.220+00:00</span></div><div class="sum-item"><span class="sum-label">beesAccountId</span><span class="sum-value mono">11000343000172</span></div></div><div class="export-bar"><button class="btn btn-sm" onclick="exportOrder(&#39;ord_1783614231460_8bkmuo&#39;)">Exportar JSON</button></div><div class="inner-tabs"><button class="inner-tab active" data-tab="geral" onclick="switchInnerTab(&#39;geral&#39;)">Geral</button><button class="inner-tab " data-tab="invoicing" onclick="switchInnerTab(&#39;invoicing&#39;)">Invoicing</button><button class="inner-tab " data-tab="customer" onclick="switchInnerTab(&#39;customer&#39;)">Customer</button><button class="inner-tab " data-tab="delivery" onclick="switchInnerTab(&#39;delivery&#39;)">Delivery</button><button class="inner-tab " data-tab="items" onclick="switchInnerTab(&#39;items&#39;)">Items</button><button class="inner-tab " data-tab="summary" onclick="switchInnerTab(&#39;summary&#39;)">Summary</button><button class="inner-tab " data-tab="payment" onclick="switchInnerTab(&#39;payment&#39;)">Payment</button><button class="inner-tab " data-tab="payments" onclick="switchInnerTab(&#39;payments&#39;)">Payments</button><button class="inner-tab " data-tab="empties" onclick="switchInnerTab(&#39;empties&#39;)">Empties</button><button class="inner-tab " data-tab="vendor" onclick="switchInnerTab(&#39;vendor&#39;)">Vendor</button><button class="inner-tab " data-tab="orderinfo" onclick="switchInnerTab(&#39;orderinfo&#39;)">Order Info</button><button class="inner-tab " data-tab="combos" onclick="switchInnerTab(&#39;combos&#39;)">Combos</button><button class="inner-tab " data-tab="properties" onclick="switchInnerTab(&#39;properties&#39;)">Properties</button></div><div class="inner-content active" data-content="geral"><div class="fieldset"><div class="fieldset-title">dados gerais do pedido</div><div class="data-grid"><div class="data-item"><span class="data-label">orderNumber</span><span class="data-value">9228881926</span></div><div class="data-item"><span class="data-label">status</span><span class="data-value">PLACED</span></div><div class="data-item"><span class="data-label">previousStatus</span><span class="data-value">PENDING</span></div><div class="data-item"><span class="data-label">channel</span><span class="data-value">B2B_APP</span></div><div class="data-item"><span class="data-label">beesAccountId</span><span class="data-value">11000343000172</span></div><div class="data-item"><span class="data-label">purchaseId</span><span class="data-value">1000384991267</span></div><div class="data-item"><span class="data-label">placementDate</span><span class="data-value">2025-06-02T16:02:57.220+00:00</span></div><div class="data-item"><span class="data-label">deleted</span><span class="data-value bool-false">false</span></div></div></div><div class="fieldset"><div class="fieldset-title">audit</div><div class="data-grid"><div class="data-item"><span class="data-label">createAt</span><span class="data-value">2025-06-02T16:02:57.220Z</span></div><div class="data-item"><span class="data-label">updateAt</span><span class="data-value">2025-06-02T16:03:42.103Z</span></div></div></div></div><div class="inner-content" data-content="invoicing"><div class="fieldset"><div class="fieldset-title">invoicing</div><div class="data-grid"><div class="data-item"><span class="data-label">legalName</span><span class="data-value">MASSACHUSTER PIZZARIA LTDA</span></div><div class="data-item"><span class="data-label">displayName</span><span class="data-value">CABANA PIZZARIA</span></div><div class="data-item"><span class="data-label">email</span><span class="data-value">No E-mail</span></div><div class="data-item"><span class="data-label">phone</span><span class="data-value">2433562336</span></div><div class="data-item" style="grid-column:1/-1;"><span class="data-label">taxIds</span><table class="array-table"><thead><tr><th>type</th><th>value</th></tr></thead><tbody><tr><td>CNPJ</td><td>11000343000172</td></tr><tr><td>INSCRICAO_ESTADUAL</td><td>78811838</td></tr></tbody></table></div></div></div></div><div class="inner-content" data-content="customer"><div class="fieldset"><div class="fieldset-title">customerInfoPersonal</div><div class="data-grid"><div class="data-item"><span class="data-label">emailAddress</span><span class="data-value">rangelganso@hotmail.com</span></div><div class="data-item"><span class="data-label">familyName</span><span class="data-value">medeiros</span></div><div class="data-item"><span class="data-label">name</span><span class="data-value">rangel medeiros</span></div><div class="data-item"><span class="data-label">givenName</span><span class="data-value">rangel</span></div><div class="data-item"><span class="data-label">locale</span><span class="data-value">pt-BR</span></div></div></div></div><div class="inner-content" data-content="delivery"><div class="fieldset"><div class="fieldset-title">delivery</div><div class="data-grid"><div class="data-item"><span class="data-label">note</span><span class="data-value"></span></div><div class="data-item"><span class="data-label">deliveryCenterId</span><span class="data-value">RUVOLORJ</span></div><div class="data-item" style="grid-column:1/-1;"><span class="data-label">distributionCenters</span><div class="nested-object" style="margin-top:8px;"><div class="data-grid"><div class="data-item"><span class="data-label">id</span><span class="data-value">RUVOLORJ</span></div><div class="data-item"><span class="data-label">vendorId</span><span class="data-value">04fe3603-91fa-4330-8e5d-0af1646c1575</span></div><div class="data-item"><span class="data-label">minDays</span><span class="data-value">7</span></div><div class="data-item"><span class="data-label">maxDays</span><span class="data-value">11</span></div><div class="data-item"><span class="data-label">maxDate</span><span class="data-value">2025-06-13T16:02:57.162Z</span></div><div class="data-item"><span class="data-label">minDate</span><span class="data-value">2025-06-09T16:02:57.162Z</span></div><div class="data-item" style="grid-column:1/-1;"><span class="data-label">shippingDays</span><table class="array-table"><thead><tr><th>weekDay</th></tr></thead><tbody><tr><td>MONDAY</td></tr><tr><td>TUESDAY</td></tr><tr><td>WEDNESDAY</td></tr><tr><td>THURSDAY</td></tr><tr><td>FRIDAY</td></tr></tbody></table></div></div></div></div><div class="data-item" style="grid-column:1/-1;"><span class="data-label">location</span><div class="nested-object"><div class="data-item" style="margin-bottom:8px;"><span class="data-label">geoCoordinates</span><div class="nested-object"><div class="data-item" style="margin-bottom:8px;"><span class="data-label">latitude</span><span class="data-value">-22.521268</span></div><div class="data-item" style="margin-bottom:8px;"><span class="data-label">longitude</span><span class="data-value">-43.997755</span></div></div></div><div class="data-item" style="margin-bottom:8px;"><span class="data-label">city</span><span class="data-value">PINHEIRAL</span></div><div class="data-item" style="margin-bottom:8px;"><span class="data-label">neighborhood</span><span class="data-value">PARAISO</span></div><div class="data-item" style="margin-bottom:8px;"><span class="data-label">state</span><span class="data-value">RJ</span></div><div class="data-item" style="margin-bottom:8px;"><span class="data-label">number</span><span class="data-value">14</span></div><div class="data-item" style="margin-bottom:8px;"><span class="data-label">zipCode</span><span class="data-value">27000000</span></div><div class="data-item" style="margin-bottom:8px;"><span class="data-label">streetAddress</span><span class="data-value">BRASILIA, 14, PARAISO, PINHEIRAL, RJ</span></div></div></div><div class="data-item"><span class="data-label">multiOrigin</span><span class="data-value bool-false">false</span></div></div></div></div><div class="inner-content" data-content="items"><div class="fieldset"><div class="fieldset-title">item 1 - Copo Prestige On The Rocks Vidro 340ml Caixa c/ 24 un</div><div class="data-grid"><div class="data-item" style="grid-column:1/-1;"><span class="data-label">package</span><div class="nested-object"><div class="data-item" style="margin-bottom:8px;"><span class="data-label">itemCount</span><span class="data-value">24</span></div><div class="data-item" style="margin-bottom:8px;"><span class="data-label">packageId</span><span class="data-value">80731</span></div><div class="data-item" style="margin-bottom:8px;"><span class="data-label">unitCount</span><span class="data-value">1</span></div><div class="data-item" style="margin-bottom:8px;"><span class="data-label">name</span><span class="data-value">Caixa Papelão</span></div></div></div><div class="data-item" style="grid-column:1/-1;"><span class="data-label">dynamicAttributes</span><div class="nested-object"><div class="data-item" style="margin-bottom:8px;"><span class="data-label">sku</span><span class="data-value">80731</span></div></div></div><div class="data-item"><span class="data-label">key</span><span class="data-value">fc-4c10-9319-59cc77ecba_080731617810</span></div><div class="data-item"><span class="data-label">measureUnit</span><span class="data-value">kg</span></div><div class="data-item"><span class="data-label">typeOfUnit</span><span class="data-value">UN</span></div><div class="data-item" style="grid-column:1/-1;"><span class="data-label">uom</span><table class="array-table"><thead><tr><th>type</th><th>browsePrice</th><th>browsePriceInclDiscounts</th><th>price</th><th>total</th><th>subtotal</th><th>discountAmount</th><th>basePrice</th></tr></thead><tbody><tr><td>KG</td><td>0.9</td><td>0.8</td><td>0.82</td><td>0.8</td><td>0.73</td><td>0.1</td><td>0.82</td></tr><tr><td>UN</td><td>7.59</td><td>6.74</td><td>6.9</td><td>6.74</td><td><span class="null">null</span></td><td>0.85</td><td>6.9</td></tr><tr><td>PACK</td><td>182.08</td><td>161.79</td><td>165.53</td><td>161.78</td><td><span class="null">null</span></td><td>20.29</td><td>165.53</td></tr></tbody></table></div><div class="data-item" style="grid-column:1/-1;"><span class="data-label">summaryItem</span><div class="nested-object"><div class="data-item" style="margin-bottom:8px;"><span class="data-label">discount</span><span class="data-value">18.45</span></div><div class="data-item" style="margin-bottom:8px;"><span class="data-label">price</span><span class="data-value">161.79</span></div><div class="data-item" style="margin-bottom:8px;"><span class="data-label">originalPrice</span><span class="data-value">182.08</span></div><div class="data-item" style="margin-bottom:8px;"><span class="data-label">subtotal</span><span class="data-value">147.08</span></div><div class="data-item" style="margin-bottom:8px;"><span class="data-label">total</span><span class="data-value">161.78</span></div><div class="data-item" style="margin-bottom:8px;"><span class="data-label">taxes</span><span class="data-value">[object Object]</span></div><div class="data-item" style="margin-bottom:8px;"><span class="data-label">charges</span><span class="data-value"></span></div><div class="data-item" style="margin-bottom:8px;"><span class="data-label">discounts</span><span class="data-value">[object Object]</span></div><div class="data-item" style="margin-bottom:8px;"><span class="data-label">dynamicValues</span><div class="nested-object"><div class="data-item" style="margin-bottom:8px;"><span class="data-label">browsePricePerUoM</span><span class="data-value">0.73</span></div></div></div></div></div><div class="data-item" style="grid-column:1/-1;"><span class="data-label">container</span><div class="nested-object"><div class="data-item" style="margin-bottom:8px;"><span class="data-label">name</span><span class="data-value">Copo Prestige</span></div><div class="data-item" style="margin-bottom:8px;"><span class="data-label">unitOfMeasurement</span><span class="data-value">kg</span></div><div class="data-item" style="margin-bottom:8px;"><span class="data-label">itemSize</span><span class="data-value">8</span></div><div class="data-item" style="margin-bottom:8px;"><span class="data-label">returnable</span><span class="data-value bool-false">false</span></div><div class="data-item" style="margin-bottom:8px;"><span class="data-label">size</span><span class="data-value">8.4</span></div></div></div><div class="data-item"><span class="data-label">vendorItemId</span><span class="data-value">80731</span></div><div class="data-item"><span class="data-label">type</span><span class="data-value">REGULAR</span></div><div class="data-item"><span class="data-label">quantity</span><span class="data-value">1</span></div><div class="data-item" style="grid-column:1/-1;"><span class="data-label">deliveryCenterItemDetail</span><span class="data-value null">[]</span></div><div class="data-item"><span class="data-label">itemClassification</span><span class="data-value">REGULAR</span></div><div class="data-item" style="grid-column:1/-1;"><span class="data-label">image</span><span class="data-value img-preview"><img class="img-thumb" src="./index_files/01-15-2025-9c5b8fcd-3640-4177-a641-79917e8db91c-3a852306.png" alt="" onerror="this.style.display=&#39;none&#39;">https://cms-prod.global.ssl.fastly.net/media/01-15-2025-9c5b8fcd-3640-4177-a641-79917e8db91c-3a852306.png</span></div><div class="data-item"><span class="data-label">name</span><span class="data-value">Copo Prestige On The Rocks Vidro 340ml Caixa c/ 24 un</span></div><div class="data-item"><span class="data-label">sku</span><span class="data-value">80731</span></div></div></div></div><div class="inner-content" data-content="summary"><div class="fieldset"><div class="fieldset-title">summary</div><div class="data-grid"><div class="data-item"><span class="data-label">discount</span><span class="data-value">18.45</span></div><div class="data-item"><span class="data-label">subtotal</span><span class="data-value">147.08</span></div><div class="data-item"><span class="data-label">total</span><span class="data-value">161.78</span></div><div class="data-item" style="grid-column:1/-1;"><span class="data-label">taxes</span><table class="array-table"><thead><tr><th>id</th><th>value</th></tr></thead><tbody><tr><td>DIFAL</td><td>14.71</td></tr></tbody></table></div><div class="data-item" style="grid-column:1/-1;"><span class="data-label">charges</span><span class="data-value null">[]</span></div><div class="data-item" style="grid-column:1/-1;"><span class="data-label">aggregateAmount</span><span class="data-value null">[]</span></div><div class="data-item" style="grid-column:1/-1;"><span class="data-label">dynamicValues</span><div class="nested-object"><div class="data-item" style="margin-bottom:8px;"><span class="data-label">deposit</span><span class="data-value">0</span></div></div></div><div class="data-item"><span class="data-label">browseSubtotal</span><span class="data-value">161.78</span></div><div class="data-item"><span class="data-label">browseDiscountAmount</span><span class="data-value">20.3</span></div></div></div></div><div class="inner-content" data-content="payment"><div class="fieldset"><div class="fieldset-title">payment</div><div class="data-grid"><div class="data-item" style="grid-column:1/-1;"><span class="data-label">translations</span><table class="array-table"><thead><tr><th>locale</th><th>description</th><th>subDescription</th></tr></thead><tbody><tr><td>pt-BR</td><td>PAGUE ANTES DO ENVIO! Para envio do seu pedido, é necessário pagamento antecipado. Instruções e link de pagamento serão enviadas pelo Whatsapp (11) 98104-5315 e bees@ruvolo.com.br</td><td></td></tr></tbody></table></div><div class="data-item" style="grid-column:1/-1;"><span class="data-label">dynamicAttributes</span><div class="nested-object"><div class="data-item" style="margin-bottom:8px;"><span class="data-label">paymentMethodCode</span><span class="data-value">CASH</span></div><div class="data-item" style="margin-bottom:8px;"><span class="data-label">transactionReferenceId</span><span class="data-value"></span></div></div></div><div class="data-item"><span class="data-label">paymentMethod</span><span class="data-value">CASH</span></div><div class="data-item"><span class="data-label">paymentMethodCode</span><span class="data-value">CASH</span></div></div></div></div><div class="inner-content" data-content="payments"><div class="fieldset"><div class="fieldset-title">payments</div><div class="data-grid"><div class="data-item" style="grid-column:1/-1;"><span class="data-label">dynamicAttributes</span><div class="nested-object"><div class="data-item" style="margin-bottom:8px;"><span class="data-label">paymentMethodCode</span><span class="data-value">CASH</span></div><div class="data-item" style="margin-bottom:8px;"><span class="data-label">transactionReferenceId</span><span class="data-value"></span></div></div></div><div class="data-item" style="grid-column:1/-1;"><span class="data-label">methods</span><div class="nested-object" style="margin-top:8px;"><div class="data-grid"><div class="data-item" style="grid-column:1/-1;"><span class="data-label">translations</span><table class="array-table"><thead><tr><th>locale</th><th>description</th><th>subDescription</th></tr></thead><tbody><tr><td>pt-BR</td><td>PAGUE ANTES DO ENVIO! Para envio do seu pedido, é necessário pagamento antecipado. Instruções e link de pagamento serão enviadas pelo Whatsapp (11) 98104-5315 e bees@ruvolo.com.br</td><td></td></tr></tbody></table></div><div class="data-item"><span class="data-label">paymentMethod</span><span class="data-value">CASH</span></div><div class="data-item"><span class="data-label">paymentTerm</span><span class="data-value null">null</span></div><div class="data-item"><span class="data-label">paymentMethodCode</span><span class="data-value">CASH</span></div><div class="data-item"><span class="data-label">monetaryAmount</span><span class="data-value">161.78</span></div><div class="data-item"><span class="data-label">nonMonetaryAmount</span><span class="data-value null">null</span></div><div class="data-item"><span class="data-label">receiptUrl</span><span class="data-value null">null</span></div><div class="data-item"><span class="data-label">transactionReferenceId</span><span class="data-value null">null</span></div><div class="data-item"><span class="data-label">financialCategoryId</span><span class="data-value null">null</span></div><div class="data-item"><span class="data-label">installments</span><span class="data-value null">null</span></div></div></div></div></div></div></div><div class="inner-content" data-content="empties"><div class="fieldset"><div class="fieldset-title">empties</div><div class="data-grid"><div class="data-item"><span class="data-label">extraAmount</span><span class="data-value null">null</span></div><div class="data-item"><span class="data-label">discountForExtraEmpties</span><span class="data-value null">null</span></div><div class="data-item"><span class="data-label">hasEmpties</span><span class="data-value bool-false">false</span></div><div class="data-item"><span class="data-label">minimumRequired</span><span class="data-value null">null</span></div><div class="data-item"><span class="data-label">totalAmount</span><span class="data-value null">null</span></div></div></div></div><div class="inner-content" data-content="vendor"><div class="fieldset"><div class="fieldset-title">vendor</div><div class="data-grid"><div class="data-item" style="grid-column:1/-1;"><span class="data-label">image</span><span class="data-value img-preview"><img class="img-thumb" src="./index_files/06-04-2024-RuvoloPNG-793e953a.png" alt="" onerror="this.style.display=&#39;none&#39;">https://cms-prod.global.ssl.fastly.net/media/06-04-2024-RuvoloPNG-793e953a.png</span></div><div class="data-item"><span class="data-label">id</span><span class="data-value">04fe3603-91fa-4330-8e5d-0af1646c1575</span></div></div></div></div><div class="inner-content" data-content="orderinfo"><div class="fieldset"><div class="fieldset-title">orderGenericInfo</div><div class="data-grid"><div class="data-item" style="grid-column:1/-1;"><span class="data-label">dynamicAttributes</span><div class="nested-object"></div></div><div class="data-item"><span class="data-label">poNumber</span><span class="data-value"></span></div></div></div></div><div class="inner-content" data-content="combos"><div class="empty-state">Nenhum combo.</div></div><div class="inner-content" data-content="properties"><div class="fieldset"><div class="fieldset-title">orderProperties</div><div class="data-grid"><div class="data-item"><span class="data-label">prop 1</span><span class="data-value">REGULAR</span></div></div></div></div></div>
+
+  <div class="empty-state" id="emptyState" style="display: none;">
+    <svg viewBox="0 0 24 24"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+    <div class="empty-state-title">Nenhum pedido carregado</div>
+    <div class="empty-state-sub">Clique em "+ Novo pedido" para adicionar um JSON.</div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+var STORAGE_KEY = 'hub_unificado_pedidos_v2';
+var orders = [];
+var activeOrderId = null;
+var currentHub = 'Lexos';
+var formatMode = true; // true = formatted, false = raw
+
+// ===== VALIDATION =====
+function detectHub(data) {
+  if (data.PedidoId !== undefined || data.Codigo !== undefined) return 'Lexos';
+  if (data.Order && data.Order.original_id !== undefined) return 'plugto';
+  if (data.Order && data.Order.id !== undefined) return 'tray';
+  if (data.id !== undefined && data.buyer !== undefined) return 'magis5';
+  if (data.id !== undefined && data.storeId !== undefined) return 'magis5';
+  if (data.orderNumber !== undefined && data.beesAccountId !== undefined) return 'bees';
+  return null;
+}
+
+function validateHub(data, hub) {
+  if (hub === 'Lexos') {
+    return data.PedidoId !== undefined || data.Codigo !== undefined;
+  }
+  if (hub === 'tray') {
+    return data.Order !== undefined && data.Order.id !== undefined;
+  }
+  if (hub === 'magis5') {
+    return data.id !== undefined;
+  }
+  if (hub === 'plugto') {
+    return data.Order !== undefined && data.Order.original_id !== undefined;
+  }
+  if (hub === 'bees') {
+    return data.orderNumber !== undefined && data.beesAccountId !== undefined;
+  }
+  return false;
+}
+
+// ===== FORMATTING =====
+function formatMoney(v) {
+  if (v === null || v === undefined || v === '') return '—';
+  var n = parseFloat(v);
+  if (isNaN(n)) return String(v);
+  return n.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
+}
+
+function fmtVal(v, key) {
+  if (v === null || v === undefined) return '<span class="data-value null">null</span>';
+  if (typeof v === 'boolean') return '<span class="data-value ' + (v ? 'bool-true' : 'bool-false') + '">' + v + '</span>';
+  if (typeof v === 'number') {
+    if (key && /id$/i.test(key)) return '<span class="data-value">' + escapeHtml(String(v)) + '</span>';
+    if (!formatMode) return '<span class="data-value">' + escapeHtml(String(v)) + '</span>';
+    return '<span class="data-value money">' + formatMoney(v) + '</span>';
+  }
+  if (typeof v === 'string' && /^\d{4}-\d{2}-\d{2}/.test(v)) {
+    if (!formatMode) return '<span class="data-value">' + escapeHtml(v) + '</span>';
+    try {
+      var dt = new Date(v);
+      return '<span class="data-value">' + dt.toLocaleString('pt-BR', {day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}) + '</span>';
+    } catch(e) { return '<span class="data-value">' + escapeHtml(v) + '</span>'; }
+  }
+  if (key && /picture|image|url|defaultPicture/i.test(key) && /^https?:\/\//.test(v)) {
+    return '<span class="data-value img-preview"><img class="img-thumb" src="' + escapeHtml(v) + '" alt="" onerror="this.style.display=\'none\'">' + escapeHtml(v) + '</span>';
+  }
+  return '<span class="data-value">' + escapeHtml(v) + '</span>';
+}
+
+function escapeHtml(t) {
+  if (t === null || t === undefined) return '';
+  return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function getStatusClass(s) {
+  if (!s) return '';
+  return 'status-' + s;
+}
+
+// ===== TOAST =====
+function showToast(msg) {
+  var t = document.getElementById('toast');
+  if (!t) return;
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(function() { t.classList.remove('show'); }, 2500);
+}
+
+// ===== STORAGE =====
+function loadOrders() {
+  try {
+    var raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) orders = JSON.parse(raw);
+  } catch(e) { orders = []; }
+  renderTabs();
+  if (orders.length > 0 && !activeOrderId) {
+    var hubOrders = orders.filter(function(o) { return o._hub === currentHub; });
+    if (hubOrders.length) activeOrderId = hubOrders[0]._id;
+  }
+  setFormatMode(false);
+}
+
+function saveOrders() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(orders)); } catch(e) {}
+}
+
+function genId() { return 'ord_' + Date.now() + '_' + Math.random().toString(36).slice(2,8); }
+
+// ===== HUB SWITCHING =====
+function switchHub(hub) {
+  currentHub = hub;
+  document.querySelectorAll('.hub-btn').forEach(function(btn) {
+    btn.classList.toggle('active', btn.dataset.hub === hub);
+  });
+  var hubOrders = orders.filter(function(o) { return o._hub === currentHub; });
+  activeOrderId = hubOrders.length ? hubOrders[0]._id : null;
+  renderTabs();
+  renderContent();
+}
+
+function setFormatMode(formatted) {
+  formatMode = formatted;
+  document.getElementById('btnFormatted').classList.toggle('active', formatted);
+  document.getElementById('btnRaw').classList.toggle('active', !formatted);
+  renderContent();
+}
+
+// ===== TABS =====
+function renderTabs() {
+  var container = document.getElementById('orderTabs');
+  var hubOrders = orders.filter(function(o) { return o._hub === currentHub; });
+  var html = '';
+  hubOrders.forEach(function(o) {
+    var label = getOrderLabel(o);
+    var isActive = o._id === activeOrderId;
+    html += '<div class="order-tab ' + (isActive ? 'active' : '') + '" data-id="' + o._id + '" onclick="switchOrder(\'' + o._id + '\')">' +
+      '<span>' + escapeHtml(label) + '</span>' +
+      '<span class="tab-close" onclick="event.stopPropagation();removeOrder(\'' + o._id + '\')">' +
+        '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>' +
+      '</span></div>';
+  });
+  html += '<button class="add-tab-btn" onclick="showAddPanel()">+ Novo pedido</button>';
+  container.innerHTML = html;
+
+  var empty = document.getElementById('emptyState');
+  var hasOrders = hubOrders.length > 0;
+  empty.style.display = hasOrders ? 'none' : 'block';
+  if (hasOrders) empty.style.display = 'none';
+}
+
+function getOrderLabel(o) {
+  if (o._hub === 'Lexos') return o.Codigo || ('Pedido ' + o.PedidoId);
+  if (o._hub === 'tray') {
+    var order = o.Order || o;
+    return order.external_code || order.id || 'Pedido';
+  }
+  if (o._hub === 'magis5') return o.externalId || o.id || 'Pedido';
+  if (o._hub === 'plugto') {
+    var order = o.Order || o;
+    return order.original_id || (order.id ? String(order.id).slice(-8) : 'Pedido');
+  }
+  if (o._hub === 'bees') return o.orderNumber || ('Pedido ' + o.purchaseId);
+  return 'Pedido';
+}
+
+function switchOrder(id) {
+  activeOrderId = id;
+  renderTabs();
+  renderContent();
+}
+
+function removeOrder(id) {
+  orders = orders.filter(function(o) { return o._id !== id; });
+  if (activeOrderId === id) {
+    var hubOrders = orders.filter(function(o) { return o._hub === currentHub; });
+    activeOrderId = hubOrders.length ? hubOrders[0]._id : null;
+  }
+  saveOrders();
+  renderTabs();
+  renderContent();
+  showToast('Pedido removido');
+}
+
+function showAddPanel() {
+  activeOrderId = '__new__';
+  renderTabs();
+  renderContent();
+}
+
+// ===== ADD ORDER =====
+function addOrderFromText() {
+  var el = document.getElementById('jsonInput');
+  var text = el.value.trim();
+  if (!text) return;
+  try {
+    var data = JSON.parse(text);
+    var detectedHub = detectHub(data);
+    if (!detectedHub) { alert('JSON nao reconhecido como pedido de nenhum hub suportado (Lexos, Tray ou Magis5).'); return; }
+    if (detectedHub !== currentHub) {
+      if (!confirm('Este pedido parece ser do Hub ' + detectedHub.toUpperCase() + '. Deseja mudar para esse hub e carregar o pedido?')) return;
+      currentHub = detectedHub;
+      document.querySelectorAll('.hub-btn').forEach(function(btn) {
+        btn.classList.toggle('active', btn.dataset.hub === detectedHub);
+      });
+    }
+    var newOrder = {};
+    for (var k in data) { newOrder[k] = data[k]; }
+    newOrder._id = genId();
+    newOrder._hub = detectedHub;
+    orders.push(newOrder);
+    activeOrderId = newOrder._id;
+    saveOrders();
+    renderTabs();
+    renderContent();
+    showToast('Pedido carregado com sucesso!');
+  } catch(e) { alert('Erro ao parsear JSON: ' + e.message); }
+}
+
+function addOrderFromFile(file) {
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      var data = JSON.parse(e.target.result);
+      var detectedHub = detectHub(data);
+      if (!detectedHub) { alert('JSON nao reconhecido como pedido de nenhum hub suportado (Lexos, Tray ou Magis5).'); return; }
+      if (detectedHub !== currentHub) {
+        if (!confirm('Este pedido parece ser do Hub ' + detectedHub.toUpperCase() + '. Deseja mudar para esse hub e carregar o pedido?')) return;
+        currentHub = detectedHub;
+        document.querySelectorAll('.hub-btn').forEach(function(btn) {
+          btn.classList.toggle('active', btn.dataset.hub === detectedHub);
+        });
+      }
+      var newOrder = {};
+      for (var k in data) { newOrder[k] = data[k]; }
+      newOrder._id = genId();
+      newOrder._hub = detectedHub;
+      orders.push(newOrder);
+      activeOrderId = newOrder._id;
+      saveOrders();
+      renderTabs();
+      renderContent();
+      showToast('Pedido carregado com sucesso!');
+    } catch(err) { alert('Erro ao ler JSON: ' + err.message); }
+  };
+  reader.readAsText(file);
+}
+
+// ===== EXPORT =====
+function exportOrder(id) {
+  var o = orders.find(function(x) { return x._id === id; });
+  if (!o) return;
+  var clean = {};
+  for (var k in o) { if (k !== '_id' && k !== '_hub') clean[k] = o[k]; }
+  var blob = new Blob([JSON.stringify(clean, null, 2)], { type: 'application/json' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = 'pedido_' + o._hub + '_' + getOrderLabel(o) + '.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('JSON exportado!');
+}
+
+function exportAll() {
+  var hubOrders = orders.filter(function(o) { return o._hub === currentHub; });
+  if (hubOrders.length === 0) { showToast('Nenhum pedido para exportar'); return; }
+  var all = hubOrders.map(function(o) {
+    var c = {};
+    for (var k in o) { if (k !== '_id' && k !== '_hub') c[k] = o[k]; }
+    return c;
+  });
+  var blob = new Blob([JSON.stringify(all, null, 2)], { type: 'application/json' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = 'pedidos_' + currentHub + '.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast(hubOrders.length + ' pedidos exportados!');
+}
+
+function clearAll() {
+  if (!confirm('Tem certeza que deseja remover TODOS os pedidos do hub ' + currentHub.toUpperCase() + '?')) return;
+  orders = orders.filter(function(o) { return o._hub !== currentHub; });
+  activeOrderId = null;
+  saveOrders();
+  renderTabs();
+  renderContent();
+  showToast('Pedidos removidos');
+}
+
+// ===== RENDER CONTENT =====
+function renderContent() {
+  var container = document.getElementById('ordersContainer');
+  if (activeOrderId === '__new__') {
+    container.innerHTML =
+      '<div style="margin-bottom:12px;">' +
+        '<div class="drop-zone" id="dropZone">' +
+          '<div class="drop-zone-text">Arraste e solte um arquivo JSON aqui</div>' +
+          '<div class="drop-zone-sub">ou cole o JSON abaixo</div>' +
+        '</div>' +
+        '<input type="file" id="fileInput" accept=".json" onchange="handleFileSelect(event)">' +
+        '<textarea class="json-input" id="jsonInput" placeholder="Cole aqui o JSON do pedido..."></textarea>' +
+        '<div class="actions-row">' +
+          '<button class="btn" onclick="document.getElementById(\'fileInput\').click()">Selecionar arquivo</button>' +
+          '<button class="btn btn-primary" onclick="addOrderFromText()">Carregar pedido</button>' +
+        '</div>' +
+      '</div>';
+    setupDropZone();
+    return;
+  }
+
+  var o = orders.find(function(x) { return x._id === activeOrderId; });
+  if (!o) { container.innerHTML = ''; return; }
+
+       if (o._hub === 'Lexos') renderLexos(o, container);
+  else if (o._hub === 'tray') renderTray(o, container);
+  else if (o._hub === 'magis5') renderMagis5(o, container);
+  else if (o._hub === 'plugto') renderPlugto(o, container);
+  else if (o._hub === 'bees') renderBees(o, container);
+}
+
+// ===== Lexos RENDERER =====
+function renderLexos(o, container) {
+  var summaryHtml =
+    '<div class="summary-bar">' +
+      '<div class="sum-item"><span class="sum-label">PedidoId</span><span class="sum-value">' + (o.PedidoId || '—') + '</span></div>' +
+      '<div class="sum-item"><span class="sum-label">Codigo</span><span class="sum-value mono">' + escapeHtml(o.Codigo || '—') + '</span></div>' +
+      '<div class="sum-item"><span class="sum-label">ClienteNome</span><span class="sum-value">' + escapeHtml(o.ClienteNome || '—') + '</span></div>' +
+      '<div class="sum-item"><span class="sum-label">ClienteCpfcnpj</span><span class="sum-value mono">' + escapeHtml(o.ClienteCpfcnpj || '—') + '</span></div>' +
+      '<div class="sum-item"><span class="sum-label">Status</span><span class="sum-value"><span class="status-badge ' + getStatusClass(o.Status) + '">' + escapeHtml(o.Status || '—') + '</span></span></div>' +
+      '<div class="sum-item"><span class="sum-label">Total</span><span class="sum-value money">' + fmtVal(o.Total, 'Total') + '</span></div>' +
+      '<div class="sum-item"><span class="sum-label">Data</span><span class="sum-value">' + escapeHtml(o.Data || '—') + '</span></div>' +
+      '<div class="sum-item"><span class="sum-label">Plataforma</span><span class="sum-value">' + escapeHtml(o.Plataforma || '—') + '</span></div>' +
+    '</div>' +
+    '<div class="export-bar"><button class="btn btn-sm" onclick="exportOrder(\'' + o._id + '\')">Exportar JSON</button></div>';
+
+  var tabs = [
+    {id:'geral',label:'Geral'},
+    {id:'cliente',label:'Cliente'},
+    {id:'enderecos',label:'Enderecos'},
+    {id:'pagamento',label:'Pagamento'},
+    {id:'itens',label:'Itens'},
+    {id:'nfes',label:'NFes'},
+    {id:'transporte',label:'Transporte'},
+    {id:'integracao',label:'Integracao'}
+  ];
+
+  var innerTabsHtml = '<div class="inner-tabs">';
+  tabs.forEach(function(t, i) {
+    innerTabsHtml += '<button class="inner-tab ' + (i===0?'active':'') + '" data-tab="' + t.id + '" onclick="switchInnerTab(\'' + t.id + '\')">' + t.label + '</button>';
+  });
+  innerTabsHtml += '</div>';
+
+  var contentsHtml = '';
+
+  var geralFields = ['PedidoId','PedidoERPId','PedidoERPCodigo','Codigo','PedidoIdGlobal','ShipmentPlataformaId','Data','Status','PagamentoAprovado','PedidoCancelado','PedidoJaSaiuParaEntrega','Desconto','Acrescimo','Frete','FreteCusto','SubTotal','Total','TipoFrete','EntregasStatus','CodigoRastreio','CodigoPlataforma','Plataforma','Canal','CanalId','LojaId','NomeExternoLoja','LojaFaturamentoId','PedidoStatusERPId','UpdatedOn','CodigoLojaErpExterno','PedidoCampanhaView','IsFulfillment','InscricaoEstadual','TipoLogistica','TransportadoraNome','Integracao','DataLimiteEnvio'];
+  contentsHtml += '<div class="inner-content active" data-content="geral"><div class="fieldset"><div class="fieldset-title">dados gerais do pedido</div><div class="data-grid">';
+  geralFields.forEach(function(k) {
+    contentsHtml += '<div class="data-item"><span class="data-label">' + k + '</span>' + fmtVal(o[k], k) + '</div>';
+  });
+  contentsHtml += '</div></div></div>';
+
+  contentsHtml += '<div class="inner-content" data-content="cliente"><div class="fieldset"><div class="fieldset-title">dados do cliente</div><div class="data-grid">';
+  ['ClienteCpfcnpj','ClienteNome','ClienteNomeFantasia','ClienteDataNascimento','ClienteSexo','ClienteRg','Observacao'].forEach(function(k) {
+    contentsHtml += '<div class="data-item"><span class="data-label">' + k + '</span>' + fmtVal(o[k], k) + '</div>';
+  });
+  contentsHtml += '</div></div>';
+  if (o.Contatos && o.Contatos.length) {
+    contentsHtml += '<div class="fieldset"><div class="fieldset-title">Contatos</div>' + renderArrayTable(o.Contatos) + '</div>';
+  }
+  contentsHtml += '</div>';
+
+  contentsHtml += '<div class="inner-content" data-content="enderecos">';
+  if (o.Enderecos && o.Enderecos.length) {
+    o.Enderecos.forEach(function(end, idx) {
+      contentsHtml += '<div class="fieldset"><div class="fieldset-title">endereco ' + (idx+1) + ' - ' + escapeHtml(end.TipoEndereco || '') + '</div><div class="data-grid">';
+      Object.keys(end).forEach(function(k) {
+        contentsHtml += '<div class="data-item"><span class="data-label">' + k + '</span>' + fmtVal(end[k], k) + '</div>';
+      });
+      contentsHtml += '</div></div>';
+    });
+  } else {
+    contentsHtml += '<div class="empty-state">Nenhum endereco cadastrado.</div>';
+  }
+  contentsHtml += '</div>';
+
+  contentsHtml += '<div class="inner-content" data-content="pagamento">';
+  if (o.ComposicaoPagamento && o.ComposicaoPagamento.length) {
+    o.ComposicaoPagamento.forEach(function(pg, idx) {
+      contentsHtml += '<div class="fieldset"><div class="fieldset-title">pagamento ' + (idx+1) + '</div><div class="data-grid">';
+      Object.keys(pg).forEach(function(k) {
+        contentsHtml += '<div class="data-item"><span class="data-label">' + k + '</span>' + fmtVal(pg[k], k) + '</div>';
+      });
+      contentsHtml += '</div></div>';
+    });
+  } else {
+    contentsHtml += '<div class="empty-state">Nenhuma forma de pagamento.</div>';
+  }
+  contentsHtml += '</div>';
+
+  contentsHtml += '<div class="inner-content" data-content="itens">';
+  if (o.Itens && o.Itens.length) {
+    contentsHtml += renderArrayTable(o.Itens);
+  } else {
+    contentsHtml += '<div class="empty-state">Nenhum item no pedido.</div>';
+  }
+  contentsHtml += '</div>';
+
+  contentsHtml += '<div class="inner-content" data-content="nfes">';
+  if (o.NFes && o.NFes.length) {
+    o.NFes.forEach(function(nfe, idx) {
+      contentsHtml += '<div class="fieldset"><div class="fieldset-title">NFe ' + (idx+1) + '</div><div class="data-grid">';
+      Object.keys(nfe).forEach(function(k) {
+        contentsHtml += '<div class="data-item"><span class="data-label">' + k + '</span>' + fmtVal(nfe[k], k) + '</div>';
+      });
+      contentsHtml += '</div></div>';
+    });
+  } else {
+    contentsHtml += '<div class="empty-state">Nenhuma NFe vinculada.</div>';
+  }
+  contentsHtml += '</div>';
+
+  contentsHtml += '<div class="inner-content" data-content="transporte"><div class="fieldset"><div class="fieldset-title">dados de transporte</div><div class="data-grid">';
+  ['TipoFrete','TipoLogistica','TransportadoraNome','CodigoRastreio','DataLimiteEnvio'].forEach(function(k) {
+    contentsHtml += '<div class="data-item"><span class="data-label">' + k + '</span>' + fmtVal(o[k], k) + '</div>';
+  });
+  contentsHtml += '</div></div>';
+  if (o.Transportadora) {
+    contentsHtml += '<div class="fieldset"><div class="fieldset-title">transportadora</div><div class="data-grid">';
+    Object.keys(o.Transportadora).forEach(function(k) {
+      contentsHtml += '<div class="data-item"><span class="data-label">' + k + '</span>' + fmtVal(o.Transportadora[k], k) + '</div>';
+    });
+    contentsHtml += '</div></div>';
+  }
+  contentsHtml += '</div>';
+
+  contentsHtml += '<div class="inner-content" data-content="integracao"><div class="fieldset"><div class="fieldset-title">integracao</div><div class="data-grid">';
+  ['IntegracaoDescricao','IntegracaoId','Integracao','IsFulfillment','InscricaoEstadual'].forEach(function(k) {
+    contentsHtml += '<div class="data-item"><span class="data-label">' + k + '</span>' + fmtVal(o[k], k) + '</div>';
+  });
+  contentsHtml += '</div></div></div>';
+
+  container.innerHTML = summaryHtml + innerTabsHtml + contentsHtml;
+}
+
+// ===== TRAY RENDERER =====
+function renderTray(o, container) {
+  var order = o.Order || o;
+
+  // Helper: desembrulha itens de array (formato novo {"ProductsSold":{...}} vs formato antigo {...})
+  function unwrap(arr, key) {
+    if (!arr || !arr.length) return [];
+    return arr.map(function(item) {
+      return item[key] !== undefined ? item[key] : item;
+    });
+  }
+
+  var summaryHtml =
+    '<div class="summary-bar">' +
+      '<div class="sum-item"><span class="sum-label">id</span><span class="sum-value">' + escapeHtml(order.id || '—') + '</span></div>' +
+      '<div class="sum-item"><span class="sum-label">external_code</span><span class="sum-value mono">' + escapeHtml(order.external_code || '—') + '</span></div>' +
+      '<div class="sum-item"><span class="sum-label">status</span><span class="sum-value"><span class="status-badge ' + getStatusClass(order.status) + '">' + escapeHtml(order.status || '—') + '</span></span></div>' +
+      '<div class="sum-item"><span class="sum-label">point_sale</span><span class="sum-value">' + escapeHtml(order.point_sale || '—') + '</span></div>' +
+      '<div class="sum-item"><span class="sum-label">total</span><span class="sum-value money">' + fmtVal(order.total, 'total') + '</span></div>' +
+      '<div class="sum-item"><span class="sum-label">date</span><span class="sum-value">' + escapeHtml(order.date || '—') + '</span></div>' +
+      '<div class="sum-item"><span class="sum-label">hour</span><span class="sum-value">' + escapeHtml(order.hour || '—') + '</span></div>' +
+      '<div class="sum-item"><span class="sum-label">payment_method</span><span class="sum-value">' + escapeHtml(order.payment_method || '—') + '</span></div>' +
+      '<div class="sum-item"><span class="sum-label">shipment</span><span class="sum-value">' + escapeHtml(order.shipment || '—') + '</span></div>' +
+      '<div class="sum-item"><span class="sum-label">delivered</span><span class="sum-value">' + escapeHtml(order.delivered || '—') + '</span></div>' +
+      '<div class="sum-item"><span class="sum-label">cost</span><span class="sum-value money">' + fmtVal(order.cost, 'cost') + '</span></div>' +
+      '<div class="sum-item"><span class="sum-label">customer_id</span><span class="sum-value">' + escapeHtml(order.customer_id || '—') + '</span></div>' +
+    '</div>' +
+    '<div class="export-bar"><button class="btn btn-sm" onclick="exportOrder(\'' + o._id + '\')">Exportar JSON</button></div>';
+
+  var tabs = [
+    {id:'order',label:'Order'},
+    {id:'status',label:'OrderStatus'},
+    {id:'customer',label:'Customer'},
+    {id:'products',label:'ProductsSold'},
+    {id:'payment',label:'Payment'},
+    {id:'invoice',label:'OrderInvoice'},
+    {id:'mlorder',label:'MlOrder'},
+    {id:'marketplace',label:'MarketplaceOrder'},
+    {id:'shipping',label:'ShippingLabel'},
+    {id:'transactions',label:'OrderTransactions'},
+    {id:'invoiceamount',label:'OrderInvoiceAmount'},
+    {id:'otheramounts',label:'OtherInvoiceAmounts'},
+    {id:'extratabs',label:'ExtraTabs'},
+    {id:'orderchilds',label:'OrderChilds'},
+    {id:'paymentmsg',label:'PaymentMethodMessage'},
+    {id:'notifications',label:'Notifications'},
+    {id:'extensions',label:'Extensions'},
+    {id:'pickup',label:'PickupLocation'}
+  ];
+
+  var innerTabsHtml = '<div class="inner-tabs">';
+  tabs.forEach(function(t, i) {
+    innerTabsHtml += '<button class="inner-tab ' + (i===0?'active':'') + '" data-tab="' + t.id + '" onclick="switchInnerTab(\'' + t.id + '\')">' + t.label + '</button>';
+  });
+  innerTabsHtml += '</div>';
+
+  var contentsHtml = '';
+
+  // Order tab
+  var orderFields = ['status','id','date','hour','customer_id','partial_total','taxes','discount','point_sale','shipment','shipment_value','original_shipment_value','shipment_date','delivered','delivered_status','shipping_cancelled','store_note','customer_note','partner_id','discount_coupon','client_ip','payment_method_rate','installment','value_1','sending_code','sending_date','billing_address','delivery_time','payment_method_id','payment_method','session_id','total','payment_date','access_code','shipment_integrator','modified','printed','interest','cart_additional_values_discount','cart_additional_values_increase','id_quotation','estimated_delivery_date','external_code','tracking_url','has_payment','has_shipment','has_invoice','delivery_date','total_comission_user','total_comission','is_traceable','cost','app_id','store_segment','payment_method_type','interest_paid_by','partner_name','Transaction'];
+  contentsHtml += '<div class="inner-content active" data-content="order"><div class="fieldset"><div class="fieldset-title">dados do pedido</div><div class="data-grid">';
+  orderFields.forEach(function(k) {
+    contentsHtml += '<div class="data-item"><span class="data-label">' + k + '</span>' + fmtVal(order[k], k) + '</div>';
+  });
+  contentsHtml += '</div></div>';
+  if (order.urls && Object.keys(order.urls).length) {
+    contentsHtml += '<div class="fieldset"><div class="fieldset-title">urls</div><div class="data-grid">';
+    Object.keys(order.urls).forEach(function(k) {
+      contentsHtml += '<div class="data-item"><span class="data-label">' + k + '</span>' + fmtVal(order.urls[k], k) + '</div>';
+    });
+    contentsHtml += '</div></div>';
+  }
+  if (order.payments_notification && Object.keys(order.payments_notification).length) {
+    contentsHtml += '<div class="fieldset"><div class="fieldset-title">payments_notification</div><div class="data-grid">';
+    Object.keys(order.payments_notification).forEach(function(k) {
+      contentsHtml += '<div class="data-item"><span class="data-label">' + k + '</span>' + fmtVal(order.payments_notification[k], k) + '</div>';
+    });
+    contentsHtml += '</div></div>';
+  }
+  contentsHtml += '</div>';
+
+  // OrderStatus tab
+  contentsHtml += '<div class="inner-content" data-content="status">';
+  if (order.OrderStatus && Object.keys(order.OrderStatus).length) {
+    contentsHtml += '<div class="fieldset"><div class="fieldset-title">OrderStatus</div><div class="data-grid">';
+    Object.keys(order.OrderStatus).forEach(function(k) {
+      contentsHtml += '<div class="data-item"><span class="data-label">' + k + '</span>' + fmtVal(order.OrderStatus[k], k) + '</div>';
+    });
+    contentsHtml += '</div></div>';
+  } else {
+    contentsHtml += '<div class="empty-state">Nenhum status detalhado.</div>';
+  }
+  contentsHtml += '</div>';
+
+  // Customer tab
+  contentsHtml += '<div class="inner-content" data-content="customer">';
+  if (order.Customer && Object.keys(order.Customer).length) {
+    var cust = order.Customer;
+    contentsHtml += '<div class="fieldset"><div class="fieldset-title">Customer</div><div class="data-grid">';
+    Object.keys(cust).forEach(function(k) {
+      var v = cust[k];
+      if (k === 'CustomerProfileRelation' && Array.isArray(v)) {
+        contentsHtml += '<div class="data-item" style="grid-column:1/-1;"><span class="data-label">CustomerProfileRelation</span>' + (v.length ? renderArrayTable(unwrap(v)) : '<span class="data-value null">[]</span>') + '</div>';
+      } else if (k === 'Extensions' && Array.isArray(v)) {
+        contentsHtml += '<div class="data-item" style="grid-column:1/-1;"><span class="data-label">Extensions</span>' + (v.length ? renderArrayTable(v) : '<span class="data-value null">[]</span>') + '</div>';
+      } else if (k === 'CustomerAddresses' && Array.isArray(v)) {
+        contentsHtml += '<div class="data-item" style="grid-column:1/-1;"><span class="data-label">CustomerAddresses</span>';
+        v.forEach(function(addr, idx) {
+          var a = addr.CustomerAddress || addr;
+          contentsHtml += '<div class="nested-object" style="margin-top:8px;"><div class="data-grid">';
+          Object.keys(a).forEach(function(ak) {
+            contentsHtml += '<div class="data-item"><span class="data-label">' + ak + '</span>' + fmtVal(a[ak], ak) + '</div>';
+          });
+          contentsHtml += '</div></div>';
+        });
+        contentsHtml += '</div>';
+      } else {
+        contentsHtml += '<div class="data-item"><span class="data-label">' + k + '</span>' + fmtVal(v, k) + '</div>';
+      }
+    });
+    contentsHtml += '</div></div>';
+  } else {
+    contentsHtml += '<div class="empty-state">Nenhum dado do cliente.</div>';
+  }
+  contentsHtml += '</div>';
+
+  // ProductsSold tab
+  contentsHtml += '<div class="inner-content" data-content="products">';
+  var products = unwrap(order.ProductsSold, 'ProductsSold');
+  if (products && products.length) {
+    products.forEach(function(prod, idx) {
+      contentsHtml += '<div class="fieldset"><div class="fieldset-title">produto ' + (idx+1) + ' - ' + escapeHtml(prod.name || '') + '</div><div class="data-grid">';
+      Object.keys(prod).forEach(function(k) {
+        var v = prod[k];
+        if (k === 'ProductSoldImage' && Array.isArray(v)) {
+          contentsHtml += '<div class="data-item" style="grid-column:1/-1;"><span class="data-label">ProductSoldImage</span>';
+          v.forEach(function(img, i2) {
+            contentsHtml += '<div class="nested-object" style="margin-top:8px;"><div class="data-grid">';
+            Object.keys(img).forEach(function(ik) {
+              var iv = img[ik];
+              if (ik === 'thumbs' && iv && typeof iv === 'object') {
+                contentsHtml += '<div class="data-item" style="grid-column:1/-1;"><span class="data-label">thumbs</span>' + renderNestedBlock(iv, ik) + '</div>';
+              } else {
+                contentsHtml += '<div class="data-item"><span class="data-label">' + ik + '</span>' + fmtVal(iv, ik) + '</div>';
+              }
+            });
+            contentsHtml += '</div></div>';
+          });
+          contentsHtml += '</div>';
+        } else if (k === 'Category' && Array.isArray(v)) {
+          contentsHtml += '<div class="data-item" style="grid-column:1/-1;"><span class="data-label">Category</span>' + (v.length ? renderArrayTable(v) : '<span class="data-value null">[]</span>') + '</div>';
+        } else if (k === 'Stock' && v && typeof v === 'object') {
+          contentsHtml += '<div class="data-item" style="grid-column:1/-1;"><span class="data-label">Stock</span>' + renderNestedBlock(v, k) + '</div>';
+        } else if (k === 'url' && v && typeof v === 'object') {
+          contentsHtml += '<div class="data-item" style="grid-column:1/-1;"><span class="data-label">url</span>' + renderNestedBlock(v, k) + '</div>';
+        } else if ((k === 'Sku' || k === 'BoughtTogether' || k === 'ProductSoldPackage' || k === 'ProductSoldCard' || k === 'Discount') && Array.isArray(v)) {
+          contentsHtml += '<div class="data-item" style="grid-column:1/-1;"><span class="data-label">' + k + '</span>' + (v.length ? renderArrayTable(v) : '<span class="data-value null">[]</span>') + '</div>';
+        } else {
+          contentsHtml += '<div class="data-item"><span class="data-label">' + k + '</span>' + fmtVal(v, k) + '</div>';
+        }
+      });
+      contentsHtml += '</div></div>';
+    });
+  } else {
+    contentsHtml += '<div class="empty-state">Nenhum produto vendido.</div>';
+  }
+  contentsHtml += '</div>';
+
+  // Payment tab
+  contentsHtml += '<div class="inner-content" data-content="payment">';
+  var payments = unwrap(order.Payment, 'Payment');
+  if (payments && payments.length) {
+    contentsHtml += renderArrayTable(payments);
+  } else {
+    contentsHtml += '<div class="empty-state">Nenhum pagamento registrado.</div>';
+  }
+  contentsHtml += '</div>';
+
+  // OrderInvoice tab
+  contentsHtml += '<div class="inner-content" data-content="invoice">';
+  var invoices = order.OrderInvoice || [];
+  if (invoices.length) {
+    invoices.forEach(function(inv, idx) {
+      var invData = inv.OrderInvoice || inv;
+      contentsHtml += '<div class="fieldset"><div class="fieldset-title">nota fiscal ' + (idx+1) + '</div><div class="data-grid">';
+      Object.keys(invData).forEach(function(k) {
+        if (k === 'xml_danfe') {
+          var xmlId = 'xml_' + o._id + '_' + idx;
+          contentsHtml += '<div class="data-item" style="grid-column:1/-1;"><span class="data-label">xml_danfe</span>' +
+            '<textarea id="' + xmlId + '" readonly style="width:100%;min-height:200px;max-height:500px;border:1px solid var(--border-color);border-radius:var(--radius-md);padding:10px;font-family:var(--font-mono);font-size:11px;background:var(--bg-muted);color:var(--text-primary);resize:vertical;line-height:1.4;">' + escapeHtml(String(invData[k])) + '</textarea>' +
+            '<div style="display:flex;gap:8px;margin-top:6px;">' +
+              '<button class="btn btn-sm" onclick="var t=document.getElementById(\'' + xmlId + '\');t.select();document.execCommand(\'copy\');showToast(\'XML copiado!\');">Copiar XML</button>' +
+            '</div>' +
+          '</div>';
+        } else {
+          contentsHtml += '<div class="data-item"><span class="data-label">' + k + '</span>' + fmtVal(invData[k], k) + '</div>';
+        }
+      });
+      contentsHtml += '</div></div>';
+      if (inv.ProductCfop && inv.ProductCfop.length) {
+        contentsHtml += '<div class="fieldset"><div class="fieldset-title">ProductCfop</div>' + renderArrayTable(inv.ProductCfop) + '</div>';
+      }
+    });
+  } else {
+    contentsHtml += '<div class="empty-state">Nenhuma nota fiscal.</div>';
+  }
+  contentsHtml += '</div>';
+
+  // MlOrder tab
+  contentsHtml += '<div class="inner-content" data-content="mlorder">';
+  var mlorders = unwrap(order.MlOrder, 'MlOrder');
+  if (mlorders && mlorders.length) {
+    mlorders.forEach(function(ml, idx) {
+      contentsHtml += '<div class="fieldset"><div class="fieldset-title">MlOrder ' + (idx+1) + '</div><div class="data-grid">';
+      Object.keys(ml).forEach(function(k) {
+        contentsHtml += '<div class="data-item"><span class="data-label">' + k + '</span>' + fmtVal(ml[k], k) + '</div>';
+      });
+      contentsHtml += '</div></div>';
+    });
+  } else {
+    contentsHtml += '<div class="empty-state">Nenhum dado do Mercado Livre.</div>';
+  }
+  contentsHtml += '</div>';
+
+  // MarketplaceOrder tab
+  contentsHtml += '<div class="inner-content" data-content="marketplace">';
+  var mps = unwrap(order.MarketplaceOrder, 'MarketplaceOrder');
+  if (mps && mps.length) {
+    mps.forEach(function(mp, idx) {
+      contentsHtml += '<div class="fieldset"><div class="fieldset-title">MarketplaceOrder ' + (idx+1) + '</div><div class="data-grid">';
+      Object.keys(mp).forEach(function(k) {
+        contentsHtml += '<div class="data-item"><span class="data-label">' + k + '</span>' + fmtVal(mp[k], k) + '</div>';
+      });
+      contentsHtml += '</div></div>';
+    });
+  } else {
+    contentsHtml += '<div class="empty-state">Nenhum dado do marketplace.</div>';
+  }
+  contentsHtml += '</div>';
+
+  // ShippingLabel tab
+  contentsHtml += '<div class="inner-content" data-content="shipping">';
+  if (order.ShippingLabel && Object.keys(order.ShippingLabel).length) {
+    contentsHtml += '<div class="fieldset"><div class="fieldset-title">ShippingLabel</div><div class="data-grid">';
+    Object.keys(order.ShippingLabel).forEach(function(k) {
+      contentsHtml += '<div class="data-item"><span class="data-label">' + k + '</span>' + fmtVal(order.ShippingLabel[k], k) + '</div>';
+    });
+    contentsHtml += '</div></div>';
+  } else {
+    contentsHtml += '<div class="empty-state">Nenhuma etiqueta de envio.</div>';
+  }
+  contentsHtml += '</div>';
+
+  // OrderTransactions tab
+  contentsHtml += '<div class="inner-content" data-content="transactions">';
+  if (order.OrderTransactions && order.OrderTransactions.length) {
+    contentsHtml += renderArrayTable(order.OrderTransactions);
+  } else {
+    contentsHtml += '<div class="empty-state">Nenhuma transação.</div>';
+  }
+  contentsHtml += '</div>';
+
+  // OrderInvoiceAmount tab
+  contentsHtml += '<div class="inner-content" data-content="invoiceamount">';
+  if (order.OrderInvoiceAmount && Object.keys(order.OrderInvoiceAmount).length) {
+    contentsHtml += '<div class="fieldset"><div class="fieldset-title">OrderInvoiceAmount</div><div class="data-grid">';
+    Object.keys(order.OrderInvoiceAmount).forEach(function(k) {
+      contentsHtml += '<div class="data-item"><span class="data-label">' + k + '</span>' + fmtVal(order.OrderInvoiceAmount[k], k) + '</div>';
+    });
+    contentsHtml += '</div></div>';
+  } else {
+    contentsHtml += '<div class="empty-state">Nenhum valor de nota fiscal.</div>';
+  }
+  contentsHtml += '</div>';
+
+  // OtherInvoiceAmounts tab
+  contentsHtml += '<div class="inner-content" data-content="otheramounts">';
+  if (order.OtherInvoiceAmounts && order.OtherInvoiceAmounts.length) {
+    contentsHtml += renderArrayTable(order.OtherInvoiceAmounts);
+  } else {
+    contentsHtml += '<div class="empty-state">Nenhum outro valor de nota fiscal.</div>';
+  }
+  contentsHtml += '</div>';
+
+  // ExtraTabs tab
+  contentsHtml += '<div class="inner-content" data-content="extratabs">';
+  if (order.ExtraTabs && order.ExtraTabs.length) {
+    contentsHtml += renderArrayTable(order.ExtraTabs);
+  } else {
+    contentsHtml += '<div class="empty-state">Nenhuma aba extra.</div>';
+  }
+  contentsHtml += '</div>';
+
+  // OrderChilds tab
+  contentsHtml += '<div class="inner-content" data-content="orderchilds">';
+  if (order.OrderChilds && order.OrderChilds.length) {
+    contentsHtml += renderArrayTable(order.OrderChilds);
+  } else {
+    contentsHtml += '<div class="empty-state">Nenhum pedido filho.</div>';
+  }
+  contentsHtml += '</div>';
+
+  // PaymentMethodMessage tab
+  contentsHtml += '<div class="inner-content" data-content="paymentmsg">';
+  if (order.PaymentMethodMessage && order.PaymentMethodMessage.length) {
+    contentsHtml += renderArrayTable(order.PaymentMethodMessage);
+  } else {
+    contentsHtml += '<div class="empty-state">Nenhuma mensagem de método de pagamento.</div>';
+  }
+  contentsHtml += '</div>';
+
+  // Notifications tab
+  contentsHtml += '<div class="inner-content" data-content="notifications">';
+  if (order.payments_notification && Object.keys(order.payments_notification).length) {
+    contentsHtml += '<div class="fieldset"><div class="fieldset-title">payments_notification</div><div class="data-grid">';
+    Object.keys(order.payments_notification).forEach(function(k) {
+      contentsHtml += '<div class="data-item"><span class="data-label">' + k + '</span>' + fmtVal(order.payments_notification[k], k) + '</div>';
+    });
+    contentsHtml += '</div></div>';
+  } else {
+    contentsHtml += '<div class="empty-state">Nenhuma notificação.</div>';
+  }
+  contentsHtml += '</div>';
+
+  // Extensions tab
+  contentsHtml += '<div class="inner-content" data-content="extensions">';
+  if (o.Extensions && o.Extensions.length) {
+    contentsHtml += renderArrayTable(o.Extensions);
+  } else {
+    contentsHtml += '<div class="empty-state">Nenhuma extensão.</div>';
+  }
+  contentsHtml += '</div>';
+
+  // PickupLocation tab
+  contentsHtml += '<div class="inner-content" data-content="pickup">';
+  if (order.PickupLocation && order.PickupLocation.length) {
+    contentsHtml += renderArrayTable(order.PickupLocation);
+  } else {
+    contentsHtml += '<div class="empty-state">Nenhum local de retirada.</div>';
+  }
+  contentsHtml += '</div>';
+
+  container.innerHTML = summaryHtml + innerTabsHtml + contentsHtml;
+}
+
+// ===== MAGIS5 RENDERER =====
+function renderMagis5(o, container) {
+  var summaryHtml =
+    '<div class="summary-bar">' +
+      '<div class="sum-item"><span class="sum-label">id</span><span class="sum-value mono">' + escapeHtml(o.id || '—') + '</span></div>' +
+      '<div class="sum-item"><span class="sum-label">externalId</span><span class="sum-value mono">' + escapeHtml(o.externalId || '—') + '</span></div>' +
+      '<div class="sum-item"><span class="sum-label">status</span><span class="sum-value"><span class="status-badge ' + getStatusClass(o.status) + '">' + escapeHtml(o.status || '—') + '</span></span></div>' +
+      '<div class="sum-item"><span class="sum-label">storeId</span><span class="sum-value">' + escapeHtml(o.storeId || '—') + '</span></div>' +
+      '<div class="sum-item"><span class="sum-label">channelName</span><span class="sum-value">' + escapeHtml(o.channelName || '—') + '</span></div>' +
+      '<div class="sum-item"><span class="sum-label">totalValue</span><span class="sum-value money">' + fmtVal(o.totalValue, 'totalValue') + '</span></div>' +
+      '<div class="sum-item"><span class="sum-label">dateCreated</span><span class="sum-value">' + escapeHtml(o.dateCreated || '—') + '</span></div>' +
+      '<div class="sum-item"><span class="sum-label">buyer</span><span class="sum-value">' + escapeHtml((o.buyer && o.buyer.full_name) || '—') + '</span></div>' +
+    '</div>' +
+    '<div class="export-bar"><button class="btn btn-sm" onclick="exportOrder(\'' + o._id + '\')">Exportar JSON</button></div>';
+
+  var tabs = [
+    {id:'geral',label:'Geral'},
+    {id:'buyer',label:'buyer'},
+    {id:'intermediary',label:'intermediary'},
+    {id:'shipping',label:'shipping'},
+    {id:'items',label:'order_items'},
+    {id:'payments',label:'payments'},
+    {id:'invoices',label:'invoices'},
+    {id:'conciliation',label:'orderConciliation'},
+    {id:'links',label:'links'},
+    {id:'tags',label:'tags'}
+  ];
+
+  var innerTabsHtml = '<div class="inner-tabs">';
+  tabs.forEach(function(t, i) {
+    innerTabsHtml += '<button class="inner-tab ' + (i===0?'active':'') + '" data-tab="' + t.id + '" onclick="switchInnerTab(\'' + t.id + '\')">' + t.label + '</button>';
+  });
+  innerTabsHtml += '</div>';
+
+  var contentsHtml = '';
+
+  var geralFields = ['id','status','storeId','externalId','totalValue','channel','channelName','statusChannel','discount','erpId','expeditionLevel','dateCreated','dateApproved','dateLastUpdated','invoiceVolume','saleFee','warehouseId','generateInvoiceAutomatically','isOrderLocked'];
+  contentsHtml += '<div class="inner-content active" data-content="geral"><div class="fieldset"><div class="fieldset-title">dados gerais do pedido</div><div class="data-grid">';
+  geralFields.forEach(function(k) {
+    contentsHtml += '<div class="data-item"><span class="data-label">' + k + '</span>' + fmtVal(o[k], k) + '</div>';
+  });
+  contentsHtml += '</div></div></div>';
+
+  contentsHtml += '<div class="inner-content" data-content="buyer">';
+  if (o.buyer && Object.keys(o.buyer).length) {
+    contentsHtml += '<div class="fieldset"><div class="fieldset-title">buyer</div><div class="data-grid">';
+    Object.keys(o.buyer).forEach(function(k) {
+      var v = o.buyer[k];
+      if (v !== null && typeof v === 'object' && !Array.isArray(v)) {
+        contentsHtml += '<div class="data-item"><span class="data-label">' + k + '</span>' + renderNestedInline(v, k) + '</div>';
+      } else {
+        contentsHtml += '<div class="data-item"><span class="data-label">' + k + '</span>' + fmtVal(v, k) + '</div>';
+      }
+    });
+    contentsHtml += '</div></div>';
+  } else {
+    contentsHtml += '<div class="empty-state">Nenhum dado do comprador.</div>';
+  }
+  contentsHtml += '</div>';
+
+  contentsHtml += '<div class="inner-content" data-content="intermediary">';
+  if (o.intermediary && Object.keys(o.intermediary).length) {
+    contentsHtml += '<div class="fieldset"><div class="fieldset-title">intermediary</div><div class="data-grid">';
+    Object.keys(o.intermediary).forEach(function(k) {
+      contentsHtml += '<div class="data-item"><span class="data-label">' + k + '</span>' + fmtVal(o.intermediary[k], k) + '</div>';
+    });
+    contentsHtml += '</div></div>';
+  } else {
+    contentsHtml += '<div class="empty-state">Nenhum intermediario.</div>';
+  }
+  contentsHtml += '</div>';
+
+  contentsHtml += '<div class="inner-content" data-content="shipping">';
+  if (o.shipping && Object.keys(o.shipping).length) {
+    contentsHtml += '<div class="fieldset"><div class="fieldset-title">shipping</div><div class="data-grid">';
+    Object.keys(o.shipping).forEach(function(k) {
+      var v = o.shipping[k];
+      if (k === 'receiver_address' && v && typeof v === 'object') {
+        contentsHtml += '<div class="data-item" style="grid-column:1/-1;"><span class="data-label">receiver_address</span>' + renderNestedBlock(v, k) + '</div>';
+      } else if (k === 'shipping_option' && v && typeof v === 'object') {
+        contentsHtml += '<div class="data-item" style="grid-column:1/-1;"><span class="data-label">shipping_option</span>' + renderNestedBlock(v, k) + '</div>';
+      } else {
+        contentsHtml += '<div class="data-item"><span class="data-label">' + k + '</span>' + fmtVal(v, k) + '</div>';
+      }
+    });
+    contentsHtml += '</div></div>';
+  } else {
+    contentsHtml += '<div class="empty-state">Nenhum dado de envio.</div>';
+  }
+  contentsHtml += '</div>';
+
+  contentsHtml += '<div class="inner-content" data-content="items">';
+  if (o.order_items && o.order_items.length) {
+    o.order_items.forEach(function(item, idx) {
+      contentsHtml += '<div class="fieldset"><div class="fieldset-title">order_item ' + (idx+1) + '</div><div class="data-grid">';
+      Object.keys(item).forEach(function(k) {
+        var v = item[k];
+        if (k === 'item' && v && typeof v === 'object') {
+          contentsHtml += '<div class="data-item" style="grid-column:1/-1;"><span class="data-label">item</span>' + renderNestedBlock(v, k) + '</div>';
+        } else if (k === 'orderSpecifications' && Array.isArray(v)) {
+          contentsHtml += '<div class="data-item" style="grid-column:1/-1;"><span class="data-label">orderSpecifications</span>' + (v.length ? renderArrayTable(v) : '<span class="data-value null">[]</span>') + '</div>';
+        } else {
+          contentsHtml += '<div class="data-item"><span class="data-label">' + k + '</span>' + fmtVal(v, k) + '</div>';
+        }
+      });
+      contentsHtml += '</div></div>';
+    });
+  } else {
+    contentsHtml += '<div class="empty-state">Nenhum item no pedido.</div>';
+  }
+  contentsHtml += '</div>';
+
+  contentsHtml += '<div class="inner-content" data-content="payments">';
+  if (o.payments && o.payments.length) {
+    contentsHtml += renderArrayTable(o.payments);
+  } else {
+    contentsHtml += '<div class="empty-state">Nenhum pagamento registrado.</div>';
+  }
+  contentsHtml += '</div>';
+
+  contentsHtml += '<div class="inner-content" data-content="invoices">';
+  if (o.invoices && o.invoices.length) {
+    contentsHtml += renderArrayTable(o.invoices);
+  } else {
+    contentsHtml += '<div class="empty-state">Nenhuma nota fiscal.</div>';
+  }
+  contentsHtml += '</div>';
+
+  contentsHtml += '<div class="inner-content" data-content="conciliation">';
+  if (o.orderConciliation && Object.keys(o.orderConciliation).length) {
+    contentsHtml += '<div class="fieldset"><div class="fieldset-title">orderConciliation</div><div class="data-grid">';
+    Object.keys(o.orderConciliation).forEach(function(k) {
+      contentsHtml += '<div class="data-item"><span class="data-label">' + k + '</span>' + fmtVal(o.orderConciliation[k], k) + '</div>';
+    });
+    contentsHtml += '</div></div>';
+  } else {
+    contentsHtml += '<div class="empty-state">Nenhuma conciliacao de pedido.</div>';
+  }
+  contentsHtml += '</div>';
+
+  contentsHtml += '<div class="inner-content" data-content="links">';
+  if (o.links && o.links.length) {
+    contentsHtml += renderArrayTable(o.links);
+  } else {
+    contentsHtml += '<div class="empty-state">Nenhum link.</div>';
+  }
+  contentsHtml += '</div>';
+
+  contentsHtml += '<div class="inner-content" data-content="tags">';
+  if (o.tags && o.tags.length) {
+    contentsHtml += '<div class="fieldset"><div class="fieldset-title">tags</div><div class="data-grid">';
+    o.tags.forEach(function(tag, idx) {
+      contentsHtml += '<div class="data-item"><span class="data-label">tag ' + (idx+1) + '</span><span class="data-value">' + escapeHtml(String(tag)) + '</span></div>';
+    });
+    contentsHtml += '</div></div>';
+  } else {
+    contentsHtml += '<div class="empty-state">Nenhuma tag.</div>';
+  }
+  contentsHtml += '</div>';
+
+  container.innerHTML = summaryHtml + innerTabsHtml + contentsHtml;
+}
+
+// ===== PLUGG.TO RENDERER =====
+function renderPlugto(o, container) {
+  var order = o.Order || o;
+
+  var summaryHtml =
+    '<div class="summary-bar">' +
+      '<div class="sum-item"><span class="sum-label">original_id</span><span class="sum-value mono">' + escapeHtml(order.original_id || '—') + '</span></div>' +
+      '<div class="sum-item"><span class="sum-label">channel</span><span class="sum-value">' + escapeHtml(order.channel || '—') + '</span></div>' +
+      '<div class="sum-item"><span class="sum-label">status</span><span class="sum-value"><span class="status-badge ' + getStatusClass(order.status) + '">' + escapeHtml(order.status || '—') + '</span></span></div>' +
+      '<div class="sum-item"><span class="sum-label">sub_status</span><span class="sum-value">' + escapeHtml(order.sub_status || '—') + '</span></div>' +
+      '<div class="sum-item"><span class="sum-label">total</span><span class="sum-value money">' + fmtVal(order.total, 'total') + '</span></div>' +
+      '<div class="sum-item"><span class="sum-label">total_paid</span><span class="sum-value money">' + fmtVal(order.total_paid, 'total_paid') + '</span></div>' +
+      '<div class="sum-item"><span class="sum-label">receiver</span><span class="sum-value">' + escapeHtml((order.receiver_name || '') + ' ' + (order.receiver_lastname || '')) + '</span></div>' +
+      '<div class="sum-item"><span class="sum-label">created</span><span class="sum-value">' + escapeHtml(order.created || '—') + '</span></div>' +
+    '</div>' +
+    '<div class="export-bar"><button class="btn btn-sm" onclick="exportOrder(\'' + o._id + '\')">Exportar JSON</button></div>';
+
+  var tabs = [
+    {id:'geral',label:'Geral'},
+    {id:'receiver',label:'Receptor'},
+    {id:'payer',label:'Pagador'},
+    {id:'items',label:'Itens'},
+    {id:'payments',label:'Pagamentos'},
+    {id:'shipments',label:'Envios'},
+    {id:'commission',label:'Comissão'},
+    {id:'otherids',label:'Other IDs'},
+    {id:'tags',label:'Tags'},
+    {id:'historicos',label:'Históricos'}
+  ];
+
+  var innerTabsHtml = '<div class="inner-tabs">';
+  tabs.forEach(function(t, i) {
+    innerTabsHtml += '<button class="inner-tab ' + (i===0?'active':'') + '" data-tab="' + t.id + '" onclick="switchInnerTab(\'' + t.id + '\')">' + t.label + '</button>';
+  });
+  innerTabsHtml += '</div>';
+
+  var contentsHtml = '';
+
+  // Geral tab
+  var geralFields = ['id','status','sub_status','original_id','external','channel','channel_account','channel_account_id','subtotal','shipping','total','discount','total_paid','delivery_type','expected_send_date','created','approved_date','modified','ack','timestamp','order_id','user_id','created_by','modified_by','input_service','tax','seller_shipment_cost','discount_description','currency','expected_delivery_date','delivery_description','deleted','comission','auto_reserve','label_printed','sla_ship','sla_delivery'];
+  contentsHtml += '<div class="inner-content active" data-content="geral"><div class="fieldset"><div class="fieldset-title">dados gerais do pedido</div><div class="data-grid">';
+  geralFields.forEach(function(k) {
+    contentsHtml += '<div class="data-item"><span class="data-label">' + k + '</span>' + fmtVal(order[k], k) + '</div>';
+  });
+  contentsHtml += '</div></div>';
+  var flagFields = ['invoicing_accepted','invoicing_accepted_date','shipping_accepted','shipping_accepted_date','delivery_accepted','delivery_accepted_date','invoicing_informed','invoicing_informed_date','shipping_informed','shipping_informed_date','delivery_informed','delivery_informed_date'];
+  contentsHtml += '<div class="fieldset"><div class="fieldset-title">flags e datas</div><div class="data-grid">';
+  flagFields.forEach(function(k) {
+    contentsHtml += '<div class="data-item"><span class="data-label">' + k + '</span>' + fmtVal(order[k], k) + '</div>';
+  });
+  contentsHtml += '</div></div></div>';
+
+  // Receiver tab
+  contentsHtml += '<div class="inner-content" data-content="receiver"><div class="fieldset"><div class="fieldset-title">dados do receptor</div><div class="data-grid">';
+  var receiverFields = ['receiver_name','receiver_lastname','receiver_address','receiver_address_number','receiver_address_complement','receiver_address_reference','receiver_additional_info','receiver_neighborhood','receiver_city','receiver_state','receiver_country','receiver_zipcode','receiver_email','receiver_phone_area','receiver_phone','receiver_phone2_area','receiver_phone2','receiver_cpf','receiver_schedule_date','receiver_schedule_period'];
+  receiverFields.forEach(function(k) {
+    contentsHtml += '<div class="data-item"><span class="data-label">' + k + '</span>' + fmtVal(order[k], k) + '</div>';
+  });
+  contentsHtml += '</div></div></div>';
+
+  // Payer tab
+  contentsHtml += '<div class="inner-content" data-content="payer"><div class="fieldset"><div class="fieldset-title">dados do pagador</div><div class="data-grid">';
+  var payerFields = ['payer_name','payer_lastname','payer_fullname','payer_gender','payer_address','payer_address_number','payer_address_complement','payer_address_reference','payer_additional_info','payer_neighborhood','payer_city','payer_state','payer_country','payer_zipcode','payer_email','payer_phone_area','payer_phone','payer_phone2_area','payer_phone2','payer_cpf','payer_cnpj','payer_razao_social','payer_ie','payer_im','payer_tax_id','payer_document','payer_company_name','payer_billing_info_id','payer_schedule_date','payer_schedule_period'];
+  payerFields.forEach(function(k) {
+    contentsHtml += '<div class="data-item"><span class="data-label">' + k + '</span>' + fmtVal(order[k], k) + '</div>';
+  });
+  contentsHtml += '</div></div>';
+  contentsHtml += '<div class="fieldset"><div class="fieldset-title">intermediários</div><div class="data-grid">';
+  ['sale_intermediary','payment_intermediary','intermediary_seller_id'].forEach(function(k) {
+    contentsHtml += '<div class="data-item"><span class="data-label">' + k + '</span>' + fmtVal(order[k], k) + '</div>';
+  });
+  contentsHtml += '</div></div></div>';
+
+  // Items tab
+  contentsHtml += '<div class="inner-content" data-content="items">';
+  if (order.items && order.items.length) {
+    order.items.forEach(function(item, idx) {
+      contentsHtml += '<div class="fieldset"><div class="fieldset-title">item ' + (idx+1) + ' - ' + escapeHtml(item.name || '') + '</div><div class="data-grid">';
+      Object.keys(item).forEach(function(k) {
+        var v = item[k];
+        if (k === 'commission' && v && typeof v === 'object') {
+          contentsHtml += '<div class="data-item" style="grid-column:1/-1;"><span class="data-label">commission</span>' + renderNestedBlock(v, k) + '</div>';
+        } else if (k === 'variation' && v && typeof v === 'object') {
+          contentsHtml += '<div class="data-item" style="grid-column:1/-1;"><span class="data-label">variation</span>' + renderNestedBlock(v, k) + '</div>';
+        } else if (k === 'attributes' && Array.isArray(v)) {
+          contentsHtml += '<div class="data-item" style="grid-column:1/-1;"><span class="data-label">attributes</span>' + (v.length ? renderArrayTable(v) : '<span class="data-value null">[]</span>') + '</div>';
+        } else {
+          contentsHtml += '<div class="data-item"><span class="data-label">' + k + '</span>' + fmtVal(v, k) + '</div>';
+        }
+      });
+      contentsHtml += '</div></div>';
+    });
+  } else {
+    contentsHtml += '<div class="empty-state">Nenhum item no pedido.</div>';
+  }
+  contentsHtml += '</div>';
+
+  // Payments tab
+  contentsHtml += '<div class="inner-content" data-content="payments">';
+  if (order.payments && order.payments.length) {
+    contentsHtml += renderArrayTable(order.payments);
+  } else {
+    contentsHtml += '<div class="empty-state">Nenhum pagamento registrado.</div>';
+  }
+  contentsHtml += '</div>';
+
+  // Shipments tab
+  contentsHtml += '<div class="inner-content" data-content="shipments">';
+  if (order.shipments && order.shipments.length) {
+    order.shipments.forEach(function(shp, idx) {
+      contentsHtml += '<div class="fieldset"><div class="fieldset-title">envio ' + (idx+1) + '</div><div class="data-grid">';
+      Object.keys(shp).forEach(function(k) {
+        var v = shp[k];
+        if (k === 'label_info' && v && typeof v === 'object') {
+          contentsHtml += '<div class="data-item" style="grid-column:1/-1;"><span class="data-label">label_info</span>' + renderNestedBlock(v, k) + '</div>';
+        } else if ((k === 'issues' || k === 'shipping_items' || k === 'documents' || k === 'freight') && Array.isArray(v)) {
+          contentsHtml += '<div class="data-item" style="grid-column:1/-1;"><span class="data-label">' + k + '</span>' + (v.length ? renderArrayTable(v) : '<span class="data-value null">[]</span>') + '</div>';
+        } else {
+          contentsHtml += '<div class="data-item"><span class="data-label">' + k + '</span>' + fmtVal(v, k) + '</div>';
+        }
+      });
+      contentsHtml += '</div></div>';
+    });
+  } else {
+    contentsHtml += '<div class="empty-state">Nenhum envio registrado.</div>';
+  }
+  contentsHtml += '</div>';
+
+  // Commission tab
+  contentsHtml += '<div class="inner-content" data-content="commission">';
+  if (order.commission && Object.keys(order.commission).length) {
+    contentsHtml += '<div class="fieldset"><div class="fieldset-title">commission</div><div class="data-grid">';
+    Object.keys(order.commission).forEach(function(k) {
+      contentsHtml += '<div class="data-item"><span class="data-label">' + k + '</span>' + fmtVal(order.commission[k], k) + '</div>';
+    });
+    contentsHtml += '</div></div>';
+  } else {
+    contentsHtml += '<div class="empty-state">Nenhuma comissão.</div>';
+  }
+  contentsHtml += '</div>';
+
+  // Other IDs tab
+  contentsHtml += '<div class="inner-content" data-content="otherids">';
+  if (order.other_ids && order.other_ids.length) {
+    contentsHtml += renderArrayTable(order.other_ids);
+  } else {
+    contentsHtml += '<div class="empty-state">Nenhum outro ID.</div>';
+  }
+  contentsHtml += '</div>';
+
+  // Tags tab
+  contentsHtml += '<div class="inner-content" data-content="tags">';
+  if (order.tags && Object.keys(order.tags).length) {
+    contentsHtml += '<div class="fieldset"><div class="fieldset-title">tags</div><div class="data-grid">';
+    Object.keys(order.tags).forEach(function(k) {
+      contentsHtml += '<div class="data-item"><span class="data-label">' + k + '</span>' + fmtVal(order.tags[k], k) + '</div>';
+    });
+    contentsHtml += '</div></div>';
+  } else {
+    contentsHtml += '<div class="empty-state">Nenhuma tag.</div>';
+  }
+  contentsHtml += '</div>';
+
+  // Históricos tab
+  contentsHtml += '<div class="inner-content" data-content="historicos">';
+  var hasAnyHistory = false;
+  var histFields = [
+    {k:'status_history',l:'Status History'},
+    {k:'substatus_history',l:'Substatus History'},
+    {k:'log_history',l:'Log History'},
+    {k:'log_permanent',l:'Log Permanent'}
+  ];
+  histFields.forEach(function(h) {
+    var arr = order[h.k];
+    if (arr && arr.length) {
+      hasAnyHistory = true;
+      contentsHtml += '<div class="fieldset"><div class="fieldset-title">' + h.l + '</div>' + renderArrayTable(arr) + '</div>';
+    }
+  });
+  if (!hasAnyHistory) {
+    contentsHtml += '<div class="empty-state">Nenhum histórico registrado.</div>';
+  }
+  contentsHtml += '</div>';
+
+  container.innerHTML = summaryHtml + innerTabsHtml + contentsHtml;
+}
+
+// ===== BEES RENDERER =====
+function renderBees(o, container) {
+  var summaryHtml =
+    '<div class="summary-bar">' +
+      '<div class="sum-item"><span class="sum-label">orderNumber</span><span class="sum-value mono">' + escapeHtml(o.orderNumber || '—') + '</span></div>' +
+      '<div class="sum-item"><span class="sum-label">status</span><span class="sum-value"><span class="status-badge ' + getStatusClass(o.status) + '">' + escapeHtml(o.status || '—') + '</span></span></div>' +
+      '<div class="sum-item"><span class="sum-label">previousStatus</span><span class="sum-value">' + escapeHtml(o.previousStatus || '—') + '</span></div>' +
+      '<div class="sum-item"><span class="sum-label">channel</span><span class="sum-value">' + escapeHtml(o.channel || '—') + '</span></div>' +
+      '<div class="sum-item"><span class="sum-label">purchaseId</span><span class="sum-value">' + escapeHtml(String(o.purchaseId || '—')) + '</span></div>' +
+      '<div class="sum-item"><span class="sum-label">total</span><span class="sum-value money">' + fmtVal(o.summary && o.summary.total, 'total') + '</span></div>' +
+      '<div class="sum-item"><span class="sum-label">placementDate</span><span class="sum-value">' + escapeHtml(o.placementDate || '—') + '</span></div>' +
+      '<div class="sum-item"><span class="sum-label">beesAccountId</span><span class="sum-value mono">' + escapeHtml(o.beesAccountId || '—') + '</span></div>' +
+    '</div>' +
+    '<div class="export-bar"><button class="btn btn-sm" onclick="exportOrder(\'' + o._id + '\')">Exportar JSON</button></div>';
+
+  var tabs = [
+    {id:'geral',label:'Geral'},
+    {id:'invoicing',label:'Invoicing'},
+    {id:'customer',label:'Customer'},
+    {id:'delivery',label:'Delivery'},
+    {id:'items',label:'Items'},
+    {id:'summary',label:'Summary'},
+    {id:'payment',label:'Payment'},
+    {id:'payments',label:'Payments'},
+    {id:'empties',label:'Empties'},
+    {id:'vendor',label:'Vendor'},
+    {id:'orderinfo',label:'Order Info'},
+    {id:'combos',label:'Combos'},
+    {id:'properties',label:'Properties'}
+  ];
+
+  var innerTabsHtml = '<div class="inner-tabs">';
+  tabs.forEach(function(t, i) {
+    innerTabsHtml += '<button class="inner-tab ' + (i===0?'active':'') + '" data-tab="' + t.id + '" onclick="switchInnerTab(\'' + t.id + '\')">' + t.label + '</button>';
+  });
+  innerTabsHtml += '</div>';
+
+  var contentsHtml = '';
+
+  // Geral tab
+  var geralFields = ['orderNumber','status','previousStatus','channel','beesAccountId','purchaseId','placementDate','deleted'];
+  contentsHtml += '<div class="inner-content active" data-content="geral"><div class="fieldset"><div class="fieldset-title">dados gerais do pedido</div><div class="data-grid">';
+  geralFields.forEach(function(k) {
+    contentsHtml += '<div class="data-item"><span class="data-label">' + k + '</span>' + fmtVal(o[k], k) + '</div>';
+  });
+  contentsHtml += '</div></div>';
+  if (o.audit && Object.keys(o.audit).length) {
+    contentsHtml += '<div class="fieldset"><div class="fieldset-title">audit</div><div class="data-grid">';
+    Object.keys(o.audit).forEach(function(k) {
+      contentsHtml += '<div class="data-item"><span class="data-label">' + k + '</span>' + fmtVal(o.audit[k], k) + '</div>';
+    });
+    contentsHtml += '</div></div>';
+  }
+  contentsHtml += '</div>';
+
+  // Invoicing tab
+  contentsHtml += '<div class="inner-content" data-content="invoicing">';
+  if (o.invoicing && Object.keys(o.invoicing).length) {
+    contentsHtml += '<div class="fieldset"><div class="fieldset-title">invoicing</div><div class="data-grid">';
+    Object.keys(o.invoicing).forEach(function(k) {
+      var v = o.invoicing[k];
+      if (k === 'taxIds' && Array.isArray(v)) {
+        contentsHtml += '<div class="data-item" style="grid-column:1/-1;"><span class="data-label">taxIds</span>' + (v.length ? renderArrayTable(v) : '<span class="data-value null">[]</span>') + '</div>';
+      } else if ((k === 'email' || k === 'phone') && Array.isArray(v)) {
+        contentsHtml += '<div class="data-item"><span class="data-label">' + k + '</span><span class="data-value">' + escapeHtml(v.join(', ')) + '</span></div>';
+      } else {
+        contentsHtml += '<div class="data-item"><span class="data-label">' + k + '</span>' + fmtVal(v, k) + '</div>';
+      }
+    });
+    contentsHtml += '</div></div>';
+  } else {
+    contentsHtml += '<div class="empty-state">Nenhum dado de faturamento.</div>';
+  }
+  contentsHtml += '</div>';
+
+  // Customer tab
+  contentsHtml += '<div class="inner-content" data-content="customer">';
+  if (o.customerInfoPersonal && Object.keys(o.customerInfoPersonal).length) {
+    contentsHtml += '<div class="fieldset"><div class="fieldset-title">customerInfoPersonal</div><div class="data-grid">';
+    Object.keys(o.customerInfoPersonal).forEach(function(k) {
+      contentsHtml += '<div class="data-item"><span class="data-label">' + k + '</span>' + fmtVal(o.customerInfoPersonal[k], k) + '</div>';
+    });
+    contentsHtml += '</div></div>';
+  } else {
+    contentsHtml += '<div class="empty-state">Nenhum dado do cliente.</div>';
+  }
+  contentsHtml += '</div>';
+
+  // Delivery tab
+  contentsHtml += '<div class="inner-content" data-content="delivery">';
+  if (o.delivery && Object.keys(o.delivery).length) {
+    contentsHtml += '<div class="fieldset"><div class="fieldset-title">delivery</div><div class="data-grid">';
+    Object.keys(o.delivery).forEach(function(k) {
+      var v = o.delivery[k];
+      if (k === 'distributionCenters' && Array.isArray(v)) {
+        contentsHtml += '<div class="data-item" style="grid-column:1/-1;"><span class="data-label">distributionCenters</span>';
+        v.forEach(function(dc, idx) {
+          contentsHtml += '<div class="nested-object" style="margin-top:8px;"><div class="data-grid">';
+          Object.keys(dc).forEach(function(dk) {
+            var dv = dc[dk];
+            if (dk === 'shippingDays' && Array.isArray(dv)) {
+              contentsHtml += '<div class="data-item" style="grid-column:1/-1;"><span class="data-label">shippingDays</span>' + (dv.length ? renderArrayTable(dv) : '<span class="data-value null">[]</span>') + '</div>';
+            } else {
+              contentsHtml += '<div class="data-item"><span class="data-label">' + dk + '</span>' + fmtVal(dv, dk) + '</div>';
+            }
+          });
+          contentsHtml += '</div></div>';
+        });
+        contentsHtml += '</div>';
+      } else if (k === 'location' && v && typeof v === 'object') {
+        contentsHtml += '<div class="data-item" style="grid-column:1/-1;"><span class="data-label">location</span>' + renderNestedBlock(v, k) + '</div>';
+      } else {
+        contentsHtml += '<div class="data-item"><span class="data-label">' + k + '</span>' + fmtVal(v, k) + '</div>';
+      }
+    });
+    contentsHtml += '</div></div>';
+  } else {
+    contentsHtml += '<div class="empty-state">Nenhum dado de entrega.</div>';
+  }
+  contentsHtml += '</div>';
+
+  // Items tab
+  contentsHtml += '<div class="inner-content" data-content="items">';
+  if (o.items && o.items.length) {
+    o.items.forEach(function(item, idx) {
+      contentsHtml += '<div class="fieldset"><div class="fieldset-title">item ' + (idx+1) + ' - ' + escapeHtml(item.name || '') + '</div><div class="data-grid">';
+      Object.keys(item).forEach(function(k) {
+        var v = item[k];
+        if (k === 'uom' && Array.isArray(v)) {
+          contentsHtml += '<div class="data-item" style="grid-column:1/-1;"><span class="data-label">uom</span>' + (v.length ? renderArrayTable(v) : '<span class="data-value null">[]</span>') + '</div>';
+        } else if (k === 'summaryItem' && v && typeof v === 'object') {
+          contentsHtml += '<div class="data-item" style="grid-column:1/-1;"><span class="data-label">summaryItem</span>' + renderNestedBlock(v, k) + '</div>';
+        } else if (k === 'package' && v && typeof v === 'object') {
+          contentsHtml += '<div class="data-item" style="grid-column:1/-1;"><span class="data-label">package</span>' + renderNestedBlock(v, k) + '</div>';
+        } else if (k === 'container' && v && typeof v === 'object') {
+          contentsHtml += '<div class="data-item" style="grid-column:1/-1;"><span class="data-label">container</span>' + renderNestedBlock(v, k) + '</div>';
+        } else if (k === 'dynamicAttributes' && v && typeof v === 'object') {
+          contentsHtml += '<div class="data-item" style="grid-column:1/-1;"><span class="data-label">dynamicAttributes</span>' + renderNestedBlock(v, k) + '</div>';
+        } else if (k === 'deliveryCenterItemDetail' && Array.isArray(v)) {
+          contentsHtml += '<div class="data-item" style="grid-column:1/-1;"><span class="data-label">deliveryCenterItemDetail</span>' + (v.length ? renderArrayTable(v) : '<span class="data-value null">[]</span>') + '</div>';
+        } else if (k === 'image' && typeof v === 'string' && /^https?:\/\//.test(v)) {
+          contentsHtml += '<div class="data-item" style="grid-column:1/-1;"><span class="data-label">image</span><span class="data-value img-preview"><img class="img-thumb" src="' + escapeHtml(v) + '" alt="" onerror="this.style.display=' + "'" + 'none' + "'" + '">' + escapeHtml(v) + '</span></div>';
+        } else {
+          contentsHtml += '<div class="data-item"><span class="data-label">' + k + '</span>' + fmtVal(v, k) + '</div>';
+        }
+      });
+      contentsHtml += '</div></div>';
+    });
+  } else {
+    contentsHtml += '<div class="empty-state">Nenhum item no pedido.</div>';
+  }
+  contentsHtml += '</div>';
+
+  // Summary tab
+  contentsHtml += '<div class="inner-content" data-content="summary">';
+  if (o.summary && Object.keys(o.summary).length) {
+    contentsHtml += '<div class="fieldset"><div class="fieldset-title">summary</div><div class="data-grid">';
+    Object.keys(o.summary).forEach(function(k) {
+      var v = o.summary[k];
+      if ((k === 'taxes' || k === 'charges' || k === 'aggregateAmount') && Array.isArray(v)) {
+        contentsHtml += '<div class="data-item" style="grid-column:1/-1;"><span class="data-label">' + k + '</span>' + (v.length ? renderArrayTable(v) : '<span class="data-value null">[]</span>') + '</div>';
+      } else if (k === 'dynamicValues' && v && typeof v === 'object') {
+        contentsHtml += '<div class="data-item" style="grid-column:1/-1;"><span class="data-label">dynamicValues</span>' + renderNestedBlock(v, k) + '</div>';
+      } else {
+        contentsHtml += '<div class="data-item"><span class="data-label">' + k + '</span>' + fmtVal(v, k) + '</div>';
+      }
+    });
+    contentsHtml += '</div></div>';
+  } else {
+    contentsHtml += '<div class="empty-state">Nenhum resumo.</div>';
+  }
+  contentsHtml += '</div>';
+
+  // Payment tab (single)
+  contentsHtml += '<div class="inner-content" data-content="payment">';
+  if (o.payment && Object.keys(o.payment).length) {
+    contentsHtml += '<div class="fieldset"><div class="fieldset-title">payment</div><div class="data-grid">';
+    Object.keys(o.payment).forEach(function(k) {
+      var v = o.payment[k];
+      if (k === 'translations' && Array.isArray(v)) {
+        contentsHtml += '<div class="data-item" style="grid-column:1/-1;"><span class="data-label">translations</span>' + (v.length ? renderArrayTable(v) : '<span class="data-value null">[]</span>') + '</div>';
+      } else if (k === 'dynamicAttributes' && v && typeof v === 'object') {
+        contentsHtml += '<div class="data-item" style="grid-column:1/-1;"><span class="data-label">dynamicAttributes</span>' + renderNestedBlock(v, k) + '</div>';
+      } else {
+        contentsHtml += '<div class="data-item"><span class="data-label">' + k + '</span>' + fmtVal(v, k) + '</div>';
+      }
+    });
+    contentsHtml += '</div></div>';
+  } else {
+    contentsHtml += '<div class="empty-state">Nenhum pagamento.</div>';
+  }
+  contentsHtml += '</div>';
+
+  // Payments tab (plural - methods)
+  contentsHtml += '<div class="inner-content" data-content="payments">';
+  if (o.payments && Object.keys(o.payments).length) {
+    contentsHtml += '<div class="fieldset"><div class="fieldset-title">payments</div><div class="data-grid">';
+    Object.keys(o.payments).forEach(function(k) {
+      var v = o.payments[k];
+      if (k === 'methods' && Array.isArray(v)) {
+        contentsHtml += '<div class="data-item" style="grid-column:1/-1;"><span class="data-label">methods</span>';
+        v.forEach(function(m, idx) {
+          contentsHtml += '<div class="nested-object" style="margin-top:8px;"><div class="data-grid">';
+          Object.keys(m).forEach(function(mk) {
+            var mv = m[mk];
+            if (mk === 'translations' && Array.isArray(mv)) {
+              contentsHtml += '<div class="data-item" style="grid-column:1/-1;"><span class="data-label">translations</span>' + (mv.length ? renderArrayTable(mv) : '<span class="data-value null">[]</span>') + '</div>';
+            } else {
+              contentsHtml += '<div class="data-item"><span class="data-label">' + mk + '</span>' + fmtVal(mv, mk) + '</div>';
+            }
+          });
+          contentsHtml += '</div></div>';
+        });
+        contentsHtml += '</div>';
+      } else if (k === 'dynamicAttributes' && v && typeof v === 'object') {
+        contentsHtml += '<div class="data-item" style="grid-column:1/-1;"><span class="data-label">dynamicAttributes</span>' + renderNestedBlock(v, k) + '</div>';
+      } else {
+        contentsHtml += '<div class="data-item"><span class="data-label">' + k + '</span>' + fmtVal(v, k) + '</div>';
+      }
+    });
+    contentsHtml += '</div></div>';
+  } else {
+    contentsHtml += '<div class="empty-state">Nenhum pagamento.</div>';
+  }
+  contentsHtml += '</div>';
+
+  // Empties tab
+  contentsHtml += '<div class="inner-content" data-content="empties">';
+  if (o.empties && Object.keys(o.empties).length) {
+    contentsHtml += '<div class="fieldset"><div class="fieldset-title">empties</div><div class="data-grid">';
+    Object.keys(o.empties).forEach(function(k) {
+      contentsHtml += '<div class="data-item"><span class="data-label">' + k + '</span>' + fmtVal(o.empties[k], k) + '</div>';
+    });
+    contentsHtml += '</div></div>';
+  } else {
+    contentsHtml += '<div class="empty-state">Nenhum dado de vasilhames.</div>';
+  }
+  contentsHtml += '</div>';
+
+  // Vendor tab
+  contentsHtml += '<div class="inner-content" data-content="vendor">';
+  if (o.vendor && Object.keys(o.vendor).length) {
+    contentsHtml += '<div class="fieldset"><div class="fieldset-title">vendor</div><div class="data-grid">';
+    Object.keys(o.vendor).forEach(function(k) {
+      var v = o.vendor[k];
+      if (k === 'image' && typeof v === 'string' && /^https?:\/\//.test(v)) {
+        contentsHtml += '<div class="data-item" style="grid-column:1/-1;"><span class="data-label">image</span><span class="data-value img-preview"><img class="img-thumb" src="' + escapeHtml(v) + '" alt="" onerror="this.style.display=' + "'" + 'none' + "'" + '">' + escapeHtml(v) + '</span></div>';
+      } else {
+        contentsHtml += '<div class="data-item"><span class="data-label">' + k + '</span>' + fmtVal(v, k) + '</div>';
+      }
+    });
+    contentsHtml += '</div></div>';
+  } else {
+    contentsHtml += '<div class="empty-state">Nenhum dado do fornecedor.</div>';
+  }
+  contentsHtml += '</div>';
+
+  // Order Info tab
+  contentsHtml += '<div class="inner-content" data-content="orderinfo">';
+  if (o.orderGenericInfo && Object.keys(o.orderGenericInfo).length) {
+    contentsHtml += '<div class="fieldset"><div class="fieldset-title">orderGenericInfo</div><div class="data-grid">';
+    Object.keys(o.orderGenericInfo).forEach(function(k) {
+      var v = o.orderGenericInfo[k];
+      if (k === 'dynamicAttributes' && v && typeof v === 'object') {
+        contentsHtml += '<div class="data-item" style="grid-column:1/-1;"><span class="data-label">dynamicAttributes</span>' + renderNestedBlock(v, k) + '</div>';
+      } else {
+        contentsHtml += '<div class="data-item"><span class="data-label">' + k + '</span>' + fmtVal(v, k) + '</div>';
+      }
+    });
+    contentsHtml += '</div></div>';
+  } else {
+    contentsHtml += '<div class="empty-state">Nenhuma informação genérica.</div>';
+  }
+  contentsHtml += '</div>';
+
+  // Combos tab
+  contentsHtml += '<div class="inner-content" data-content="combos">';
+  if (o.combos && o.combos.length) {
+    contentsHtml += renderArrayTable(o.combos);
+  } else {
+    contentsHtml += '<div class="empty-state">Nenhum combo.</div>';
+  }
+  contentsHtml += '</div>';
+
+  // Properties tab
+  contentsHtml += '<div class="inner-content" data-content="properties">';
+  if (o.orderProperties && o.orderProperties.length) {
+    contentsHtml += '<div class="fieldset"><div class="fieldset-title">orderProperties</div><div class="data-grid">';
+    o.orderProperties.forEach(function(prop, idx) {
+      contentsHtml += '<div class="data-item"><span class="data-label">prop ' + (idx+1) + '</span><span class="data-value">' + escapeHtml(String(prop)) + '</span></div>';
+    });
+    contentsHtml += '</div></div>';
+  } else {
+    contentsHtml += '<div class="empty-state">Nenhuma propriedade.</div>';
+  }
+  contentsHtml += '</div>';
+
+  container.innerHTML = summaryHtml + innerTabsHtml + contentsHtml;
+}
+
+// ===== HELPERS =====
+function renderNestedBlock(obj, parentKey) {
+  if (!obj || typeof obj !== 'object') return fmtVal(obj, parentKey);
+  var html = '<div class="nested-object">';
+  Object.keys(obj).forEach(function(k) {
+    var v = obj[k];
+    if (v !== null && typeof v === 'object' && !Array.isArray(v)) {
+      html += '<div class="data-item" style="margin-bottom:8px;"><span class="data-label">' + k + '</span>' + renderNestedBlock(v, k) + '</div>';
+    } else {
+      html += '<div class="data-item" style="margin-bottom:8px;"><span class="data-label">' + k + '</span>' + fmtVal(v, k) + '</div>';
+    }
+  });
+  html += '</div>';
+  return html;
+}
+
+function renderNestedInline(obj, parentKey) {
+  if (!obj || typeof obj !== 'object') return fmtVal(obj, parentKey);
+  var html = '<div style="display:flex;flex-wrap:wrap;gap:4px;">';
+  Object.keys(obj).forEach(function(k) {
+    html += '<span style="background:var(--bg-muted);padding:2px 8px;border-radius:4px;font-size:12px;">' + escapeHtml(k) + ': ' + escapeHtml(String(obj[k])) + '</span>';
+  });
+  html += '</div>';
+  return html;
+}
+
+function renderArrayTable(arr) {
+  if (!arr || !arr.length) return '';
+  var keys = Object.keys(arr[0]);
+  var html = '<table class="array-table"><thead><tr>';
+  keys.forEach(function(k) { html += '<th>' + k + '</th>'; });
+  html += '</tr></thead><tbody>';
+  arr.forEach(function(row) {
+    html += '<tr>';
+    keys.forEach(function(k) {
+      var v = row[k];
+      var cell = '';
+      if (v === null || v === undefined) cell = '<span class="null">null</span>';
+      else if (typeof v === 'boolean') cell = '<span class="' + (v ? 'bool-true' : 'bool-false') + '">' + v + '</span>';
+      else if (typeof v === 'number') {
+        if (/id$/i.test(k)) cell = escapeHtml(String(v));
+        else if (!formatMode) cell = escapeHtml(String(v));
+        else cell = '<span class="money">' + formatMoney(v) + '</span>';
+      }
+      else if (typeof v === 'string' && /^\d{4}-\d{2}-\d{2}/.test(v)) {
+        if (!formatMode) cell = escapeHtml(v);
+        else {
+          try {
+            var dt = new Date(v);
+            cell = dt.toLocaleString('pt-BR', {day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+          } catch(e) { cell = escapeHtml(v); }
+        }
+      }
+      else if (/picture|image|url|defaultPicture/i.test(k) && /^https?:\/\//.test(v)) {
+        cell = '<span class="img-preview"><img class="img-thumb" src="' + escapeHtml(v) + '" alt="" onerror="this.style.display=\'none\'">' + escapeHtml(v) + '</span>';
+      }
+      else cell = escapeHtml(v);
+      html += '<td>' + cell + '</td>';
+    });
+    html += '</tr>';
+  });
+  html += '</tbody></table>';
+  return html;
+}
+
+function switchInnerTab(tabId) {
+  document.querySelectorAll('.inner-tab').forEach(function(t) {
+    t.classList.toggle('active', t.dataset.tab === tabId);
+  });
+  document.querySelectorAll('.inner-content').forEach(function(c) {
+    c.classList.toggle('active', c.dataset.content === tabId);
+  });
+}
+
+function setupDropZone() {
+  var dz = document.getElementById('dropZone');
+  if (!dz) return;
+  dz.addEventListener('click', function() { document.getElementById('fileInput').click(); });
+  ['dragenter','dragover'].forEach(function(e) {
+    dz.addEventListener(e, function(ev) { ev.preventDefault(); dz.classList.add('dragover'); });
+  });
+  ['dragleave','drop'].forEach(function(e) {
+    dz.addEventListener(e, function(ev) { ev.preventDefault(); dz.classList.remove('dragover'); });
+  });
+  dz.addEventListener('drop', function(ev) {
+    var files = ev.dataTransfer.files;
+    if (files.length) addOrderFromFile(files[0]);
+  });
+}
+
+function handleFileSelect(e) {
+  var file = e.target.files[0];
+  if (file) addOrderFromFile(file);
+}
+
+loadOrders();
+</script>
+
+</body></html>
