@@ -267,6 +267,65 @@
     pointer-events: none; z-index: 1000;
   }
   .toast.show { opacity: 1; transform: translateY(0); }
+  
+    .btn-report {
+    background: var(--accent-blue);
+    color: #fff;
+    border-color: var(--accent-blue);
+  }
+  .btn-report:hover {
+    opacity: 0.85;
+    background: var(--accent-blue);
+  }
+  .report-header {
+    text-align: center;
+    padding: 24px 16px;
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 20px;
+    background: var(--bg-panel);
+    border-radius: var(--radius-lg);
+  }
+  .report-header h2 {
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+  .report-header .report-meta {
+    font-size: 12px;
+    color: var(--text-tertiary);
+  }
+  .report-header .report-hub {
+    display: inline-block;
+    padding: 3px 12px;
+    border-radius: var(--radius-sm);
+    background: var(--accent-blue);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 600;
+    margin-top: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .section-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 24px 0 12px 0;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--border-color);
+    color: var(--text-primary);
+  }
+  .report-footer {
+    text-align: center;
+    padding: 20px;
+    margin-top: 32px;
+    border-top: 1px solid var(--border-color);
+    font-size: 11px;
+    color: var(--text-quaternary);
+  }
+  .export-actions {
+    text-align: center;
+    margin-bottom: 20px;
+  }
 
   @media (max-width: 640px) {
     .summary-bar { grid-template-columns: repeat(2, 1fr); }
@@ -448,8 +507,8 @@ function switchHub(hub) {
 
 function setFormatMode(formatted) {
   formatMode = formatted;
-  //document.getElementById('btnFormatted').classList.toggle('active', formatted);
-  //document.getElementById('btnRaw').classList.toggle('active', !formatted);
+  // document.getElementById('btnFormatted').classList.toggle('active', formatted);
+  // document.getElementById('btnRaw').classList.toggle('active', !formatted);
   renderContent();
 }
 
@@ -667,7 +726,7 @@ function renderLexos(o, container) {
       '<div class="sum-item"><span class="sum-label">Data</span><span class="sum-value">' + escapeHtml(o.Data || '—') + '</span></div>' +
       '<div class="sum-item"><span class="sum-label">Plataforma</span><span class="sum-value">' + escapeHtml(o.Plataforma || '—') + '</span></div>' +
     '</div>' +
-    '<div class="export-bar"><button class="btn btn-sm" onclick="exportOrder(\'' + o._id + '\')">Exportar JSON</button></div>';
+    '<div class="export-bar"><button class="btn btn-sm btn-report" onclick="exportReport(\'' + o._id + '\')">📄 Exportar Relatório</button><button class="btn btn-sm" onclick="exportOrder(\'' + o._id + '\')">Exportar JSON</button></div>';
 
   var tabs = [
     {id:'geral',label:'Geral'},
@@ -805,7 +864,7 @@ function renderTray(o, container) {
       '<div class="sum-item"><span class="sum-label">cost</span><span class="sum-value money">' + fmtVal(order.cost, 'cost') + '</span></div>' +
       '<div class="sum-item"><span class="sum-label">customer_id</span><span class="sum-value">' + escapeHtml(order.customer_id || '—') + '</span></div>' +
     '</div>' +
-    '<div class="export-bar"><button class="btn btn-sm" onclick="exportOrder(\'' + o._id + '\')">Exportar JSON</button></div>';
+    '<div class="export-bar"><button class="btn btn-sm btn-report" onclick="exportReport(\'' + o._id + '\')">📄 Exportar Relatório</button><button class="btn btn-sm" onclick="exportOrder(\'' + o._id + '\')">Exportar JSON</button></div>';
 
   var tabs = [
     {id:'order',label:'Order'},
@@ -1136,7 +1195,7 @@ function renderMagis5(o, container) {
       '<div class="sum-item"><span class="sum-label">dateCreated</span><span class="sum-value">' + escapeHtml(o.dateCreated || '—') + '</span></div>' +
       '<div class="sum-item"><span class="sum-label">buyer</span><span class="sum-value">' + escapeHtml((o.buyer && o.buyer.full_name) || '—') + '</span></div>' +
     '</div>' +
-    '<div class="export-bar"><button class="btn btn-sm" onclick="exportOrder(\'' + o._id + '\')">Exportar JSON</button></div>';
+    '<div class="export-bar"><button class="btn btn-sm btn-report" onclick="exportReport(\'' + o._id + '\')">📄 Exportar Relatório</button><button class="btn btn-sm" onclick="exportOrder(\'' + o._id + '\')">Exportar JSON</button></div>';
 
   var tabs = [
     {id:'geral',label:'Geral'},
@@ -1301,7 +1360,7 @@ function renderPlugto(o, container) {
       '<div class="sum-item"><span class="sum-label">receiver</span><span class="sum-value">' + escapeHtml((order.receiver_name || '') + ' ' + (order.receiver_lastname || '')) + '</span></div>' +
       '<div class="sum-item"><span class="sum-label">created</span><span class="sum-value">' + escapeHtml(order.created || '—') + '</span></div>' +
     '</div>' +
-    '<div class="export-bar"><button class="btn btn-sm" onclick="exportOrder(\'' + o._id + '\')">Exportar JSON</button></div>';
+    '<div class="export-bar"><button class="btn btn-sm btn-report" onclick="exportReport(\'' + o._id + '\')">📄 Exportar Relatório</button><button class="btn btn-sm" onclick="exportOrder(\'' + o._id + '\')">Exportar JSON</button></div>';
 
   var tabs = [
     {id:'geral',label:'Geral'},
@@ -1486,7 +1545,7 @@ function renderBees(o, container) {
       '<div class="sum-item"><span class="sum-label">placementDate</span><span class="sum-value">' + escapeHtml(o.placementDate || '—') + '</span></div>' +
       '<div class="sum-item"><span class="sum-label">beesAccountId</span><span class="sum-value mono">' + escapeHtml(o.beesAccountId || '—') + '</span></div>' +
     '</div>' +
-    '<div class="export-bar"><button class="btn btn-sm" onclick="exportOrder(\'' + o._id + '\')">Exportar JSON</button></div>';
+    '<div class="export-bar"><button class="btn btn-sm btn-report" onclick="exportReport(\'' + o._id + '\')">📄 Exportar Relatório</button><button class="btn btn-sm" onclick="exportOrder(\'' + o._id + '\')">Exportar JSON</button></div>';
 
   var tabs = [
     {id:'geral',label:'Geral'},
@@ -1786,7 +1845,7 @@ function renderRepMais(o, container) {
       '<div class="sum-item"><span class="sum-label">dataCriacao</span><span class="sum-value">' + escapeHtml(o.dataCriacao || '—') + '</span></div>' +
       '<div class="sum-item"><span class="sum-label">nomeComprador</span><span class="sum-value">' + escapeHtml(o.nomeComprador || '—') + '</span></div>' +
     '</div>' +
-    '<div class="export-bar"><button class="btn btn-sm" onclick="exportOrder(\'' + o._id + '\')">Exportar JSON</button></div>';
+    '<div class="export-bar"><button class="btn btn-sm btn-report" onclick="exportReport(\'' + o._id + '\')">📄 Exportar Relatório</button><button class="btn btn-sm" onclick="exportOrder(\'' + o._id + '\')">Exportar JSON</button></div>';
 
   var tabs = [
     {id:'geral',label:'Geral'},
@@ -2182,6 +2241,141 @@ function setupDropZone() {
 function handleFileSelect(e) {
   var file = e.target.files[0];
   if (file) addOrderFromFile(file);
+}
+
+function exportReport(id) {
+  var o = orders.find(function(x) { return x._id === id; });
+  if (!o) return;
+
+  // 1. Garante que o pedido está renderizado no DOM
+  var originalActive = activeOrderId;
+  activeOrderId = id;
+  renderContent();
+
+  var container = document.getElementById('ordersContainer');
+  if (!container) { activeOrderId = originalActive; renderContent(); return; }
+
+  // 2. Clona o container para não mexer no original
+  var clone = container.cloneNode(true);
+
+  // 3. Expande todas as abas internas do clone
+  clone.querySelectorAll('.inner-tab').forEach(function(tab) {
+    tab.classList.add('active');
+  });
+  clone.querySelectorAll('.inner-content').forEach(function(content) {
+    content.classList.add('active');
+    content.style.display = 'block';
+  });
+
+  // 4. Remove botões de ação do clone (exportar, copiar XML, etc.)
+  clone.querySelectorAll('.export-bar, .actions-row, .btn, button').forEach(function(el) {
+    el.remove();
+  });
+
+  // 5. Remove o resumo duplicado se quiser (opcional — deixe se preferir)
+  // clone.querySelectorAll('.summary-bar').forEach(function(el, idx) { if(idx > 0) el.remove(); });
+
+  // 6. Monta o HTML do relatório
+  var reportTitle = 'Relatório do Pedido - ' + getOrderLabel(o);
+  var hubName = o._hub.toUpperCase();
+  var now = new Date().toLocaleString('pt-BR');
+
+  var cleanData = {};
+  for (var k in o) { if (k !== '_id' && k !== '_hub') cleanData[k] = o[k]; }
+  var jsonData = JSON.stringify(cleanData, null, 2);
+  var jsonBase64 = btoa(unescape(encodeURIComponent(jsonData)));
+
+  var html = '<!DOCTYPE html>\n' +
+    '<html lang="pt-BR">\n' +
+    '<head>\n' +
+    '<meta charset="UTF-8">\n' +
+    '<meta name="viewport" content="width=device-width, initial-scale=1.0">\n' +
+    '<title>' + escapeHtml(reportTitle) + '</title>\n' +
+    '<style>\n' +
+    '  :root { --bg-page:#f5f7fa; --bg-panel:#fff; --bg-muted:#f0f2f5; --border-color:#d1d5db; --text-primary:#1f2937; --text-secondary:#6b7280; --text-tertiary:#9ca3af; --text-quaternary:#d1d5db; --accent-blue:#2563eb; --accent-green:#16a34a; --accent-red:#dc2626; --accent-orange:#ea580c; --accent-purple:#8b5cf6; --font-sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif; --font-mono:"SF Mono","Fira Code","Cascadia Code",Consolas,monospace; --radius-sm:6px; --radius-md:8px; --radius-lg:10px; }\n' +
+    '  @media (prefers-color-scheme: dark) { :root { --bg-page:#111827; --bg-panel:#1f2937; --bg-muted:#374151; --border-color:#4b5563; --text-primary:#f9fafb; --text-secondary:#d1d5db; --text-tertiary:#9ca3af; --text-quaternary:#6b7280; } }\n' +
+    '  * { box-sizing:border-box; margin:0; padding:0; }\n' +
+    '  body { font-family:var(--font-sans); background:var(--bg-page); color:var(--text-primary); padding:16px; min-height:100vh; }\n' +
+    '  .wrap { max-width:1400px; margin:0 auto; }\n' +
+    '  .report-header { text-align:center; padding:24px 16px; border-bottom:1px solid var(--border-color); margin-bottom:20px; background:var(--bg-panel); border-radius:var(--radius-lg); }\n' +
+    '  .report-header h2 { font-size:20px; font-weight:600; margin-bottom:6px; }\n' +
+    '  .report-header .report-meta { font-size:12px; color:var(--text-tertiary); }\n' +
+    '  .report-header .report-hub { display:inline-block; padding:3px 12px; border-radius:var(--radius-sm); background:var(--accent-blue); color:#fff; font-size:11px; font-weight:600; margin-top:8px; text-transform:uppercase; letter-spacing:0.05em; }\n' +
+    '  .summary-bar { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:10px; margin-bottom:20px; padding:16px; border:1px solid var(--border-color); border-radius:var(--radius-lg); background:var(--bg-muted); }\n' +
+    '  .sum-item { display:flex; flex-direction:column; gap:3px; }\n' +
+    '  .sum-label { font-size:11px; color:var(--text-tertiary); letter-spacing:0.02em; }\n' +
+    '  .sum-value { font-size:14px; font-weight:600; word-break:break-word; }\n' +
+    '  .sum-value.money { font-variant-numeric:tabular-nums; font-feature-settings:"tnum" 1; }\n' +
+    '  .status-badge { display:inline-block; padding:3px 10px; border-radius:var(--radius-sm); font-size:11px; font-weight:600; }\n' +
+    '  .status-pagamento_confirmado { background:rgba(234,88,12,0.12); color:var(--accent-orange); }\n' +
+    '  .status-completo,.status-entregue,.status-FATURADO,.status-approved { background:rgba(22,163,74,0.12); color:var(--accent-green); }\n' +
+    '  .status-cancelado,.status-canceled { background:rgba(220,38,38,0.12); color:var(--accent-red); }\n' +
+    '  .status-separar,.status-processing,.status-shipped { background:rgba(37,99,235,0.12); color:var(--accent-blue); }\n' +
+    '  .status-awaiting_payment { background:rgba(234,88,12,0.12); color:var(--accent-orange); }\n' +
+    '  .status-handling { background:rgba(139,92,246,0.12); color:var(--accent-purple); }\n' +
+    '  .inner-tabs { display:flex; gap:2px; margin-bottom:0; border-bottom:1px solid var(--border-color); flex-wrap:wrap; }\n' +
+    '  .inner-tab { padding:10px 18px; border:none; background:transparent; font-size:13px; color:var(--text-secondary); border-bottom:2px solid transparent; transition:all 0.15s; font-family:inherit; font-weight:600; color:var(--text-primary); border-bottom-color:var(--text-primary); }\n' +
+    '  .inner-content { display:block !important; padding:20px 0; }\n' +
+    '  .fieldset { border:1px solid var(--border-color); border-radius:var(--radius-lg); padding:20px; margin-bottom:20px; background:var(--bg-panel); }\n' +
+    '  .fieldset-title { font-size:14px; font-weight:600; color:var(--text-primary); margin-bottom:16px; padding-bottom:10px; border-bottom:1px solid var(--border-color); }\n' +
+    '  .data-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:12px; }\n' +
+    '  .data-item { display:flex; flex-direction:column; gap:3px; }\n' +
+    '  .data-label { font-size:11px; color:var(--text-tertiary); letter-spacing:0.02em; }\n' +
+    '  .data-value { font-size:13px; color:var(--text-primary); word-break:break-word; min-height:20px; line-height:1.4; }\n' +
+    '  .data-value.null { color:var(--text-quaternary); font-style:italic; }\n' +
+    '  .data-value.mono { font-family:var(--font-mono); font-size:12px; }\n' +
+    '  .data-value.money { font-variant-numeric:tabular-nums; font-feature-settings:"tnum" 1; }\n' +
+    '  .data-value.img-preview { display:flex; align-items:center; gap:10px; }\n' +
+    '  .img-thumb { width:40px; height:40px; border-radius:6px; object-fit:cover; border:1px solid var(--border-color); }\n' +
+    '  .array-table { width:100%; border-collapse:collapse; font-size:13px; border:1px solid var(--border-color); border-radius:var(--radius-lg); overflow:hidden; }\n' +
+    '  .array-table th,.array-table td { border:1px solid var(--border-color); padding:10px 12px; text-align:left; }\n' +
+    '  .array-table th { background:var(--bg-muted); font-size:11px; font-weight:600; color:var(--text-secondary); letter-spacing:0.02em; }\n' +
+    '  .array-table tr:hover { background:var(--bg-muted); }\n' +
+    '  .array-table td .null { color:var(--text-quaternary); font-style:italic; }\n' +
+    '  .array-table td .bool-true { color:var(--accent-green); font-weight:600; }\n' +
+    '  .array-table td .bool-false { color:var(--accent-red); font-weight:600; }\n' +
+    '  .array-table td .money { font-variant-numeric:tabular-nums; font-feature-settings:"tnum" 1; }\n' +
+    '  .nested-object { border:1px solid var(--border-color); border-radius:var(--radius-md); padding:16px; margin-bottom:12px; background:var(--bg-panel); }\n' +
+    '  .bool-true { color:var(--accent-green); font-weight:600; }\n' +
+    '  .bool-false { color:var(--accent-red); font-weight:600; }\n' +
+    '  .section-title { font-size:16px; font-weight:600; margin:24px 0 12px 0; padding-bottom:8px; border-bottom:2px solid var(--border-color); color:var(--text-primary); }\n' +
+    '  .empty-state { text-align:center; padding:40px 20px; color:var(--text-tertiary); font-style:italic; }\n' +
+    '  .report-footer { text-align:center; padding:20px; margin-top:32px; border-top:1px solid var(--border-color); font-size:11px; color:var(--text-quaternary); }\n' +
+    '  .btn { padding:8px 16px; border:1px solid var(--border-color); border-radius:var(--radius-md); background:var(--bg-panel); color:var(--text-primary); cursor:pointer; font-family:inherit; font-size:13px; text-decoration:none; display:inline-block; }\n' +
+    '  .btn-primary { background:var(--text-primary); color:var(--bg-panel); border-color:var(--text-primary); }\n' +
+    '  .export-actions { text-align:center; margin-bottom:20px; }\n' +
+    '  @media (max-width:640px) { .summary-bar { grid-template-columns:repeat(2,1fr); } .data-grid { grid-template-columns:1fr; } }\n' +
+    '</style>\n' +
+    '</head>\n' +
+    '<body>\n' +
+    '<div class="wrap">\n' +
+    '  <div class="report-header">\n' +
+    '    <h2>' + escapeHtml(reportTitle) + '</h2>\n' +
+    '    <div class="report-meta">Gerado em ' + now + ' via Hub Unificado</div>\n' +
+    '    <div class="report-hub">' + hubName + '</div>\n' +
+    '  </div>\n' +
+    '  <div class="export-actions"><a class="btn btn-primary" href="data:application/json;base64,' + jsonBase64 + '" download="pedido_' + o._hub + '_' + getOrderLabel(o) + '.json">⬇ Exportar JSON deste pedido</a></div>\n' +
+    '  ' + clone.innerHTML + '\n' +
+    '  <div class="report-footer">Documento gerado para compartilhamento • Não permite edição<br>Para informações oficiais, consulte a plataforma do hub correspondente.</div>\n' +
+    '</div>\n' +
+    '</body>\n' +
+    '</html>';
+
+  // 7. Restaura o estado original da UI
+  activeOrderId = originalActive;
+  renderContent();
+
+  // 8. Download
+  var blob = new Blob([html], { type: 'text/html' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = 'relatorio_' + o._hub + '_' + getOrderLabel(o) + '.html';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('Relatório HTML exportado!');
 }
 
 loadOrders();
