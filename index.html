@@ -553,6 +553,7 @@ function getOrderLabel(o) {
   }
   if (o._hub === 'bees') return o.orderNumber || ('Pedido ' + o.purchaseId);
   if (o._hub === 'repmais') return o.chave || o.idExterno || ('Pedido ' + o.id);
+  if (o._hub === 'b2b') return o.increment_id || ('Pedido ' + o.entity_id);
   return 'Pedido';
 }
 
