@@ -2500,7 +2500,7 @@ function exportReport(id) {
   var o = orders.find(function(x) { return x._id === id; });
   if (!o) return;
 
-  // 1. Garante que o pedido está renderizado no DOM
+  // Garante que o pedido está renderizado no DOM
   var originalActive = activeOrderId;
   activeOrderId = id;
   renderContent();
@@ -2508,27 +2508,35 @@ function exportReport(id) {
   var container = document.getElementById('ordersContainer');
   if (!container) { activeOrderId = originalActive; renderContent(); return; }
 
-  // 2. Clona o container para não mexer no original
+  // Clona o container
   var clone = container.cloneNode(true);
 
-  // 3. Expande todas as abas internas do clone
-  clone.querySelectorAll('.inner-tab').forEach(function(tab) {
-    tab.classList.add('active');
-  });
-  clone.querySelectorAll('.inner-content').forEach(function(content) {
-    content.classList.add('active');
-    content.style.display = 'block';
-  });
-
-  // 4. Remove botões de ação do clone (exportar, copiar XML, etc.)
-  clone.querySelectorAll('.export-bar, .actions-row, .btn, button').forEach(function(el) {
+  // Remove botões de ação (exportar, copiar, etc.)
+  clone.querySelectorAll('.export-bar, .actions-row').forEach(function(el) {
     el.remove();
   });
 
-  // 5. Remove o resumo duplicado se quiser (opcional — deixe se preferir)
-  // clone.querySelectorAll('.summary-bar').forEach(function(el, idx) { if(idx > 0) el.remove(); });
+  // NÃO força display:block nas abas! Mantém o CSS original.
+  // Só garante que a primeira aba está ativa (estado inicial)
+  clone.querySelectorAll('.inner-content').forEach(function(content, idx) {
+    content.classList.remove('active');
+    content.style.display = ''; // limpa inline styles
+  });
+  clone.querySelectorAll('.inner-tab').forEach(function(tab, idx) {
+    tab.classList.remove('active');
+    tab.removeAttribute('onclick'); // remove o onclick inline antigo
+  });
 
-  // 6. Monta o HTML do relatório
+  // Ativa só a primeira aba no clone (estado inicial)
+  var firstTab = clone.querySelector('.inner-tab');
+  var firstContent = clone.querySelector('.inner-content');
+  if (firstTab) firstTab.classList.add('active');
+  if (firstContent) {
+    firstContent.classList.add('active');
+    firstContent.style.display = 'block';
+  }
+
+  // Monta o HTML do relatório
   var reportTitle = 'Relatório do Pedido - ' + getOrderLabel(o);
   var hubName = o._hub.toUpperCase();
   var now = new Date().toLocaleString('pt-BR');
@@ -2545,6 +2553,7 @@ function exportReport(id) {
     '<meta name="viewport" content="width=device-width, initial-scale=1.0">\n' +
     '<title>' + escapeHtml(reportTitle) + '</title>\n' +
     '<style>\n' +
+    '  /* ===== CSS ORIGINAL DA FERRAMENTA (copiado) ===== */\n' +
     '  :root { --bg-page:#f5f7fa; --bg-panel:#fff; --bg-muted:#f0f2f5; --border-color:#d1d5db; --text-primary:#1f2937; --text-secondary:#6b7280; --text-tertiary:#9ca3af; --text-quaternary:#d1d5db; --accent-blue:#2563eb; --accent-green:#16a34a; --accent-red:#dc2626; --accent-orange:#ea580c; --accent-purple:#8b5cf6; --font-sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif; --font-mono:"SF Mono","Fira Code","Cascadia Code",Consolas,monospace; --radius-sm:6px; --radius-md:8px; --radius-lg:10px; }\n' +
     '  @media (prefers-color-scheme: dark) { :root { --bg-page:#111827; --bg-panel:#1f2937; --bg-muted:#374151; --border-color:#4b5563; --text-primary:#f9fafb; --text-secondary:#d1d5db; --text-tertiary:#9ca3af; --text-quaternary:#6b7280; } }\n' +
     '  * { box-sizing:border-box; margin:0; padding:0; }\n' +
@@ -2567,8 +2576,11 @@ function exportReport(id) {
     '  .status-awaiting_payment { background:rgba(234,88,12,0.12); color:var(--accent-orange); }\n' +
     '  .status-handling { background:rgba(139,92,246,0.12); color:var(--accent-purple); }\n' +
     '  .inner-tabs { display:flex; gap:2px; margin-bottom:0; border-bottom:1px solid var(--border-color); flex-wrap:wrap; }\n' +
-    '  .inner-tab { padding:10px 18px; border:none; background:transparent; font-size:13px; color:var(--text-secondary); border-bottom:2px solid transparent; transition:all 0.15s; font-family:inherit; font-weight:600; color:var(--text-primary); border-bottom-color:var(--text-primary); }\n' +
-    '  .inner-content { display:block !important; padding:20px 0; }\n' +
+    '  .inner-tab { padding:10px 18px; border:none; background:transparent; cursor:pointer; font-size:13px; color:var(--text-secondary); border-bottom:2px solid transparent; transition:all 0.15s; font-family:inherit; }\n' +
+    '  .inner-tab:hover { color:var(--text-primary); }\n' +
+    '  .inner-tab.active { color:var(--text-primary); border-bottom-color:var(--text-primary); font-weight:600; }\n' +
+    '  .inner-content { display:none; padding:20px 0; }\n' +
+    '  .inner-content.active { display:block; }\n' +
     '  .fieldset { border:1px solid var(--border-color); border-radius:var(--radius-lg); padding:20px; margin-bottom:20px; background:var(--bg-panel); }\n' +
     '  .fieldset-title { font-size:14px; font-weight:600; color:var(--text-primary); margin-bottom:16px; padding-bottom:10px; border-bottom:1px solid var(--border-color); }\n' +
     '  .data-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:12px; }\n' +
@@ -2591,7 +2603,6 @@ function exportReport(id) {
     '  .nested-object { border:1px solid var(--border-color); border-radius:var(--radius-md); padding:16px; margin-bottom:12px; background:var(--bg-panel); }\n' +
     '  .bool-true { color:var(--accent-green); font-weight:600; }\n' +
     '  .bool-false { color:var(--accent-red); font-weight:600; }\n' +
-    '  .section-title { font-size:16px; font-weight:600; margin:24px 0 12px 0; padding-bottom:8px; border-bottom:2px solid var(--border-color); color:var(--text-primary); }\n' +
     '  .empty-state { text-align:center; padding:40px 20px; color:var(--text-tertiary); font-style:italic; }\n' +
     '  .report-footer { text-align:center; padding:20px; margin-top:32px; border-top:1px solid var(--border-color); font-size:11px; color:var(--text-quaternary); }\n' +
     '  .btn { padding:8px 16px; border:1px solid var(--border-color); border-radius:var(--radius-md); background:var(--bg-panel); color:var(--text-primary); cursor:pointer; font-family:inherit; font-size:13px; text-decoration:none; display:inline-block; }\n' +
@@ -2611,14 +2622,31 @@ function exportReport(id) {
     '  ' + clone.innerHTML + '\n' +
     '  <div class="report-footer">Documento gerado para compartilhamento • Não permite edição<br>Para informações oficiais, consulte a plataforma do hub correspondente.</div>\n' +
     '</div>\n' +
+    '<script>\n' +
+    '  // ===== FUNÇÃO DE TROCA DE ABAS (incluída no relatório) =====\n' +
+    '  function switchInnerTab(tabId) {\n' +
+    '    document.querySelectorAll(".inner-tab").forEach(function(t) {\n' +
+    '      t.classList.toggle("active", t.dataset.tab === tabId);\n' +
+    '    });\n' +
+    '    document.querySelectorAll(".inner-content").forEach(function(c) {\n' +
+    '      c.classList.toggle("active", c.dataset.content === tabId);\n' +
+    '      if (c.dataset.content === tabId) { c.style.display = "block"; }\n' +
+    '      else { c.style.display = "none"; }\n' +
+    '    });\n' +
+    '  }\n' +
+    '  // Atribui os onclick nos botões de aba\n' +
+    '  document.querySelectorAll(".inner-tab").forEach(function(tab) {\n' +
+    '    tab.onclick = function() { switchInnerTab(this.dataset.tab); };\n' +
+    '  });\n' +
+    '</scr'+'ipt>\n' +
     '</body>\n' +
     '</html>';
 
-  // 7. Restaura o estado original da UI
+  // Restaura o estado original da UI
   activeOrderId = originalActive;
   renderContent();
 
-  // 8. Download
+  // Download
   var blob = new Blob([html], { type: 'text/html' });
   var url = URL.createObjectURL(blob);
   var a = document.createElement('a');
