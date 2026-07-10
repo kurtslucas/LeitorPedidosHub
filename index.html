@@ -335,6 +335,7 @@
     .order-tab { white-space: nowrap; }
   }
 </style>
+<base target="_blank">
 </head>
 <body>
 
@@ -365,6 +366,7 @@
     <button class="hub-btn" data-hub="bees" onclick="switchHub('bees')">Hub BEES</button>
     <button class="hub-btn" data-hub="repmais" onclick="switchHub('repmais')">Rep+</button>
     <button class="hub-btn" data-hub="b2b" onclick="switchHub('b2b')">B2B (Magento)</button>
+    <button class="hub-btn" data-hub="generic" onclick="switchHub('generic')">Genérico (Qualquer JSON)</button>
   </div>
 
   <div class="order-tabs" id="orderTabs"></div>
@@ -387,10 +389,12 @@
 
 <script>
 var STORAGE_KEY = 'hub_unificado_pedidos_v2';
+var STATE_KEY = 'hub_unificado_state_v2';
 var orders = [];
 var activeOrderId = null;
 var currentHub = 'Lexos';
 var formatMode = true; // true = formatted, false = raw
+var activeInnerTabs = {}; // { orderId: tabId }
 
 // ===== VALIDATION =====
 function detectHub(data) {
@@ -402,6 +406,7 @@ function detectHub(data) {
   if (data.orderNumber !== undefined && data.beesAccountId !== undefined) return 'bees';
   if (data.id !== undefined && data.repmaisCanal !== undefined) return 'repmais';
   if (data.increment_id !== undefined && data.entity_id !== undefined && data.items !== undefined && data.billing_address !== undefined) return 'b2b';
+  if (typeof data === 'object' && data !== null && !Array.isArray(data)) return 'generic';
   return null;
 }
 
@@ -426,6 +431,9 @@ function validateHub(data, hub) {
   }
   if (hub === 'b2b') {
     return data.increment_id !== undefined && data.entity_id !== undefined;
+  }
+  if (hub === 'generic') {
+    return typeof data === 'object' && data !== null && !Array.isArray(data);
   }
   return false;
 }
@@ -484,16 +492,53 @@ function loadOrders() {
     var raw = localStorage.getItem(STORAGE_KEY);
     if (raw) orders = JSON.parse(raw);
   } catch(e) { orders = []; }
+
+  // Restaura estado salvo (hub, pedido ativo, abas internas)
+  try {
+    var stateRaw = localStorage.getItem(STATE_KEY);
+    if (stateRaw) {
+      var state = JSON.parse(stateRaw);
+      if (state.currentHub) currentHub = state.currentHub;
+      if (state.activeOrderId) activeOrderId = state.activeOrderId;
+      if (state.activeInnerTabs) activeInnerTabs = state.activeInnerTabs;
+    }
+  } catch(e) {}
+
+  // Atualiza botão do hub ativo
+  document.querySelectorAll('.hub-btn').forEach(function(btn) {
+    btn.classList.toggle('active', btn.dataset.hub === currentHub);
+  });
+
   renderTabs();
-  if (orders.length > 0 && !activeOrderId) {
-    var hubOrders = orders.filter(function(o) { return o._hub === currentHub; });
-    if (hubOrders.length) activeOrderId = hubOrders[0]._id;
+
+  // Se o pedido salvo não existe mais ou não pertence ao hub atual, ajusta
+  var hubOrders = orders.filter(function(o) { return o._hub === currentHub; });
+  if (hubOrders.length > 0) {
+    var orderStillExists = orders.some(function(o) { return o._id === activeOrderId; });
+    var orderInHub = orders.some(function(o) { return o._id === activeOrderId && o._hub === currentHub; });
+    if (!orderStillExists || !orderInHub) {
+      activeOrderId = hubOrders[0]._id;
+    }
+  } else {
+    activeOrderId = null;
   }
+
   setFormatMode(false);
 }
 
 function saveOrders() {
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(orders)); } catch(e) {}
+}
+
+function saveState() {
+  try {
+    var state = {
+      currentHub: currentHub,
+      activeOrderId: activeOrderId,
+      activeInnerTabs: activeInnerTabs
+    };
+    localStorage.setItem(STATE_KEY, JSON.stringify(state));
+  } catch(e) {}
 }
 
 function genId() { return 'ord_' + Date.now() + '_' + Math.random().toString(36).slice(2,8); }
@@ -506,6 +551,7 @@ function switchHub(hub) {
   });
   var hubOrders = orders.filter(function(o) { return o._hub === currentHub; });
   activeOrderId = hubOrders.length ? hubOrders[0]._id : null;
+  saveState();
   renderTabs();
   renderContent();
 }
@@ -554,11 +600,13 @@ function getOrderLabel(o) {
   if (o._hub === 'bees') return o.orderNumber || ('Pedido ' + o.purchaseId);
   if (o._hub === 'repmais') return o.chave || o.idExterno || ('Pedido ' + o.id);
   if (o._hub === 'b2b') return o.increment_id || ('Pedido ' + o.entity_id);
+  if (o._hub === 'generic') return o.id || o.name || 'JSON Genérico';
   return 'Pedido';
 }
 
 function switchOrder(id) {
   activeOrderId = id;
+  saveState();
   renderTabs();
   renderContent();
 }
@@ -569,7 +617,12 @@ function removeOrder(id) {
     var hubOrders = orders.filter(function(o) { return o._hub === currentHub; });
     activeOrderId = hubOrders.length ? hubOrders[0]._id : null;
   }
+  // Limpa a aba interna salva do pedido removido
+  if (activeInnerTabs[id]) {
+    delete activeInnerTabs[id];
+  }
   saveOrders();
+  saveState();
   renderTabs();
   renderContent();
   showToast('Pedido removido');
@@ -604,6 +657,7 @@ function addOrderFromText() {
     orders.push(newOrder);
     activeOrderId = newOrder._id;
     saveOrders();
+    saveState();
     renderTabs();
     renderContent();
     showToast('Pedido carregado com sucesso!');
@@ -631,6 +685,7 @@ function addOrderFromFile(file) {
       orders.push(newOrder);
       activeOrderId = newOrder._id;
       saveOrders();
+      saveState();
       renderTabs();
       renderContent();
       showToast('Pedido carregado com sucesso!');
@@ -682,6 +737,7 @@ function clearAll() {
   orders = orders.filter(function(o) { return o._hub !== currentHub; });
   activeOrderId = null;
   saveOrders();
+  saveState();
   renderTabs();
   renderContent();
   showToast('Pedidos removidos');
@@ -718,6 +774,17 @@ function renderContent() {
   else if (o._hub === 'bees') renderBees(o, container);
   else if (o._hub === 'repmais') renderRepMais(o, container);
   else if (o._hub === 'b2b') renderB2B(o, container);
+  else if (o._hub === 'generic') renderGeneric(o, container);
+
+  // Restaura a aba interna ativa para este pedido (se houver)
+  if (activeOrderId && activeOrderId !== '__new__' && activeInnerTabs[activeOrderId]) {
+    var savedTab = activeInnerTabs[activeOrderId];
+    // Verifica se a aba existe no DOM antes de ativar
+    var tabExists = document.querySelector('.inner-tab[data-tab="' + savedTab + '"]');
+    if (tabExists) {
+      switchInnerTab(savedTab);
+    }
+  }
 }
 
 // ===== Lexos RENDERER =====
@@ -2401,6 +2468,749 @@ function renderB2B(o, container) {
   container.innerHTML = summaryHtml + innerTabsHtml + contentsHtml;
 }
 
+// ===== GENERIC RENDERER (qualquer JSON) - VERSÃO CORRIGIDA =====
+function renderGeneric(o, container) {
+  // Detecta se o JSON é "array-first" (só tem 1 chave que é array)
+  var keys = Object.keys(o).filter(function(k) { return k !== '_id' && k !== '_hub'; });
+  var isArrayFirst = keys.length === 1 && Array.isArray(o[keys[0]]);
+
+  // RESUMO
+  var summaryHtml = '<div class="summary-bar">';
+
+  if (isArrayFirst) {
+    // Mostra info sobre o array principal
+    var arrKey = keys[0];
+    var arr = o[arrKey];
+    summaryHtml += '<div class="sum-item"><span class="sum-label">estrutura</span><span class="sum-value">Array: ' + escapeHtml(arrKey) + '</span></div>';
+    summaryHtml += '<div class="sum-item"><span class="sum-label">total de itens</span><span class="sum-value">' + arr.length + '</span></div>';
+    if (arr.length > 0 && typeof arr[0] === 'object') {
+      summaryHtml += '<div class="sum-item"><span class="sum-label">campos por item</span><span class="sum-value">' + Object.keys(arr[0]).join(', ') + '</span></div>';
+    }
+  } else {
+    // Resumo normal com campos do objeto
+    var summaryFields = pickSummaryFields(o);
+    summaryFields.forEach(function(f) {
+      summaryHtml += '<div class="sum-item">' +
+        '<span class="sum-label">' + escapeHtml(f.key) + '</span>' +
+        fmtVal(f.value, f.key) +
+      '</div>';
+    });
+  }
+
+  summaryHtml += '</div>' +
+    '<div class="export-bar">' +
+      '<button class="btn btn-sm btn-report" onclick="exportReport(\'' + o._id + '\')">📄 Exportar Relatório</button>' +
+      '<button class="btn btn-sm" onclick="exportOrder(\'' + o._id + '\')">Exportar JSON</button>' +
+    '</div>';
+
+  // CLASSIFICAÇÃO DOS CAMPOS
+  var simpleFields = [];
+  var arrayFields = [];
+  var objectFields = [];
+  var dateFields = [];
+  var moneyFields = [];
+  var idFields = [];
+  var imageFields = [];
+
+  Object.keys(o).forEach(function(k) {
+    if (k === '_id' || k === '_hub') return;
+    classifyField(k, o[k], simpleFields, arrayFields, objectFields, dateFields, moneyFields, idFields, imageFields);
+  });
+
+  // MONTA ABAS
+  var tabDefs = [];
+
+  if (isArrayFirst) {
+    // Array-first: a aba principal é o array
+    var arrKey = keys[0];
+    tabDefs.push({id: 'main_array', label: escapeHtml(arrKey) + ' (' + o[arrKey].length + ')'});
+  } else {
+    if (simpleFields.length || dateFields.length || moneyFields.length || idFields.length || imageFields.length) {
+      tabDefs.push({id: 'geral', label: 'Geral'});
+    }
+  }
+
+  objectFields.forEach(function(f) {
+    tabDefs.push({id: 'obj_' + f.key, label: f.key});
+  });
+
+  if (!isArrayFirst) {
+    arrayFields.forEach(function(f) {
+      tabDefs.push({id: 'arr_' + f.key, label: f.key + ' (' + f.value.length + ')'});
+    });
+  }
+
+    // Garante que sempre haja pelo menos uma aba ativa
+  var firstTabId = tabDefs.length > 0 ? tabDefs[0].id : null;
+
+  var innerTabsHtml = '<div class="inner-tabs">';
+  tabDefs.forEach(function(t, i) {
+    innerTabsHtml += '<button class="inner-tab ' + (i===0?'active':'') + '" data-tab="' + t.id + '" onclick="switchInnerTab(\'' + t.id + '\')">' + t.label + '</button>';
+  });
+  innerTabsHtml += '</div>';
+
+  // CONTEÚDO DAS ABAS
+  var contentsHtml = '';
+
+  if (isArrayFirst) {
+    // Aba principal: o array
+    var arrKey = keys[0];
+    var arr = o[arrKey];
+    contentsHtml += '<div class="inner-content active" data-content="main_array">';
+    contentsHtml += renderGenericArray(arr, arrKey);
+    contentsHtml += '</div>';
+
+    // Se houver outros campos além do array, mostra na aba Geral
+    if (simpleFields.length || objectFields.length > 0) {
+      tabDefs.push({id: 'geral', label: 'Outros campos'});
+      contentsHtml += '<div class="inner-content" data-content="geral">';
+      contentsHtml += renderGenericFields(simpleFields, dateFields, moneyFields, idFields, imageFields, objectFields);
+      contentsHtml += '</div>';
+    }
+  } else {
+    // Aba Geral normal
+    if (tabDefs.length > 0 && tabDefs[0].id === 'geral') {
+      contentsHtml += '<div class="inner-content active" data-content="geral">';
+      contentsHtml += renderGenericFields(simpleFields, dateFields, moneyFields, idFields, imageFields, []);
+      contentsHtml += '</div>';
+    } else if (tabDefs.length > 0) {
+      // Não há aba Geral, ativa a primeira aba disponível (objeto ou array)
+      contentsHtml += '<div class="inner-content active" data-content="' + tabDefs[0].id + '">';
+      if (tabDefs[0].id.indexOf('obj_') === 0) {
+        var objKey = tabDefs[0].id.replace('obj_', '');
+        var objField = objectFields.find(function(f) { return f.key === objKey; });
+        if (objField) {
+          contentsHtml += '<div class="fieldset"><div class="fieldset-title">' + escapeHtml(objField.key) + '</div>';
+          contentsHtml += renderGenericObject(objField.value, objField.key);
+          contentsHtml += '</div>';
+        }
+      } else if (tabDefs[0].id.indexOf('arr_') === 0) {
+        var arrKey2 = tabDefs[0].id.replace('arr_', '');
+        var arrField = arrayFields.find(function(f) { return f.key === arrKey2; });
+        if (arrField) {
+          contentsHtml += renderGenericArray(arrField.value, arrField.key);
+        }
+      }
+      contentsHtml += '</div>';
+    }
+  }
+
+  // Abas de Objetos
+  objectFields.forEach(function(f) {
+    contentsHtml += '<div class="inner-content" data-content="obj_' + f.key + '">';
+    contentsHtml += '<div class="fieldset"><div class="fieldset-title">' + escapeHtml(f.key) + '</div>';
+    contentsHtml += renderGenericObject(f.value, f.key);
+    contentsHtml += '</div></div>';
+  });
+
+  // Abas de Arrays (só se não for array-first)
+  if (!isArrayFirst) {
+    arrayFields.forEach(function(f) {
+      contentsHtml += '<div class="inner-content" data-content="arr_' + f.key + '">';
+      contentsHtml += renderGenericArray(f.value, f.key);
+      contentsHtml += '</div>';
+    });
+  }
+
+  container.innerHTML = summaryHtml + innerTabsHtml + contentsHtml;
+}
+
+// ===== CLASSIFICA UM CAMPO =====
+function classifyField(k, v, simpleFields, arrayFields, objectFields, dateFields, moneyFields, idFields, imageFields) {
+  if (v === null || v === undefined) {
+    simpleFields.push({key: k, value: v});
+  } else if (typeof v === 'boolean') {
+    simpleFields.push({key: k, value: v});
+  } else if (typeof v === 'number') {
+    if (/id$|_id$|Id$|ID$|code$|_code$|Code$|key$|uuid|hash/i.test(k)) {
+      idFields.push({key: k, value: v});
+    } else if (v > 10 && /total|price|amount|value|cost|fee|tax|discount|shipping|grand|subtotal/i.test(k)) {
+      moneyFields.push({key: k, value: v});
+    } else {
+      simpleFields.push({key: k, value: v});
+    }
+  } else if (typeof v === 'string') {
+    if (/^\d{4}-\d{2}-\d{2}/.test(v)) {
+      dateFields.push({key: k, value: v});
+    } else if (/^https?:\/\/.*\.(jpg|jpeg|png|gif|webp|svg)/i.test(v)) {
+      imageFields.push({key: k, value: v});
+    } else {
+      simpleFields.push({key: k, value: v});
+    }
+  } else if (Array.isArray(v)) {
+    if (v.length === 0) {
+      simpleFields.push({key: k, value: '[] (vazio)'});
+    } else {
+      arrayFields.push({key: k, value: v});
+    }
+  } else if (typeof v === 'object') {
+    objectFields.push({key: k, value: v});
+  }
+}
+
+// ===== RENDERIZA CAMPOS GERAIS (aba Geral) =====
+function renderGenericFields(simpleFields, dateFields, moneyFields, idFields, imageFields, objectFields) {
+  var html = '';
+
+  if (idFields.length) {
+    html += '<div class="fieldset"><div class="fieldset-title">identificadores</div><div class="data-grid">';
+    idFields.forEach(function(f) {
+      html += '<div class="data-item"><span class="data-label">' + escapeHtml(f.key) + '</span>' + fmtVal(f.value, f.key) + '</div>';
+    });
+    html += '</div></div>';
+  }
+
+  if (moneyFields.length) {
+    html += '<div class="fieldset"><div class="fieldset-title">valores monetários / numéricos</div><div class="data-grid">';
+    moneyFields.forEach(function(f) {
+      html += '<div class="data-item"><span class="data-label">' + escapeHtml(f.key) + '</span>' + fmtVal(f.value, f.key) + '</div>';
+    });
+    html += '</div></div>';
+  }
+
+  if (dateFields.length) {
+    html += '<div class="fieldset"><div class="fieldset-title">datas</div><div class="data-grid">';
+    dateFields.forEach(function(f) {
+      html += '<div class="data-item"><span class="data-label">' + escapeHtml(f.key) + '</span>' + fmtVal(f.value, f.key) + '</div>';
+    });
+    html += '</div></div>';
+  }
+
+  if (imageFields.length) {
+    html += '<div class="fieldset"><div class="fieldset-title">imagens</div><div class="data-grid">';
+    imageFields.forEach(function(f) {
+      html += '<div class="data-item"><span class="data-label">' + escapeHtml(f.key) + '</span>' + fmtVal(f.value, f.key) + '</div>';
+    });
+    html += '</div></div>';
+  }
+
+  if (simpleFields.length) {
+    html += '<div class="fieldset"><div class="fieldset-title">campos gerais</div><div class="data-grid">';
+    simpleFields.forEach(function(f) {
+      html += '<div class="data-item"><span class="data-label">' + escapeHtml(f.key) + '</span>' + fmtVal(f.value, f.key) + '</div>';
+    });
+    html += '</div></div>';
+  }
+
+  if (objectFields.length) {
+    objectFields.forEach(function(f) {
+      html += '<div class="fieldset"><div class="fieldset-title">' + escapeHtml(f.key) + '</div>';
+      html += renderGenericObject(f.value, f.key);
+      html += '</div>';
+    });
+  }
+
+  return html;
+}
+
+// ===== RENDERIZA ARRAY GENÉRICO =====
+function renderGenericArray(arr, label) {
+  if (!arr || arr.length === 0) {
+    return '<div class="empty-state">Nenhum item em ' + escapeHtml(label) + '.</div>';
+  }
+
+  var html = '';
+
+  arr.forEach(function(item, idx) {
+    if (typeof item === 'object' && item !== null) {
+      // Item é objeto → card com grid
+      html += '<div class="fieldset"><div class="fieldset-title">' + escapeHtml(label) + ' ' + (idx+1);
+
+      // Tenta pegar um nome/título para o card
+      if (item.name) html += ' - ' + escapeHtml(String(item.name));
+      else if (item.title) html += ' - ' + escapeHtml(String(item.title));
+      else if (item.id) html += ' (id: ' + escapeHtml(String(item.id)) + ')';
+
+      html += '</div>';
+      html += renderGenericObject(item, label);
+      html += '</div>';
+    } else {
+      // Item é primitivo → simples
+      html += '<div class="fieldset"><div class="fieldset-title">' + escapeHtml(label) + ' ' + (idx+1) + '</div>';
+      html += '<div class="data-grid"><div class="data-item"><span class="data-label">valor</span>' + fmtVal(item, 'valor') + '</div></div>';
+      html += '</div>';
+    }
+  });
+
+  return html;
+}
+
+// ===== RENDERIZA OBJETO GENÉRICO (RECURSIVO) =====
+function renderGenericObject(obj, parentKey) {
+  var html = '<div class="data-grid">';
+
+  Object.keys(obj).forEach(function(k) {
+    var v = obj[k];
+
+    if (v === null || v === undefined) {
+      html += '<div class="data-item"><span class="data-label">' + escapeHtml(k) + '</span>' + fmtVal(v, k) + '</div>';
+    } else if (typeof v === 'boolean') {
+      html += '<div class="data-item"><span class="data-label">' + escapeHtml(k) + '</span>' + fmtVal(v, k) + '</div>';
+    } else if (typeof v === 'number') {
+      html += '<div class="data-item"><span class="data-label">' + escapeHtml(k) + '</span>' + fmtVal(v, k) + '</div>';
+    } else if (typeof v === 'string') {
+      html += '<div class="data-item"><span class="data-label">' + escapeHtml(k) + '</span>' + fmtVal(v, k) + '</div>';
+    } else if (Array.isArray(v)) {
+      if (v.length === 0) {
+        html += '<div class="data-item" style="grid-column:1/-1;"><span class="data-label">' + escapeHtml(k) + '</span><span class="data-value null">[] (vazio)</span></div>';
+      } else if (typeof v[0] === 'object') {
+        // Array de objetos dentro de objeto → nested cards
+        html += '<div class="data-item" style="grid-column:1/-1;"><span class="data-label">' + escapeHtml(k) + ' (' + v.length + ' itens)</span>';
+        v.forEach(function(subItem, subIdx) {
+          html += '<div class="nested-object" style="margin-top:8px;">' + renderGenericObject(subItem, k) + '</div>';
+        });
+        html += '</div>';
+      } else {
+        // Array de primitivos
+        html += '<div class="data-item" style="grid-column:1/-1;"><span class="data-label">' + escapeHtml(k) + '</span><span class="data-value">' + escapeHtml(v.join(', ')) + '</span></div>';
+      }
+    } else if (typeof v === 'object') {
+      // Objeto aninhado → nested block
+      html += '<div class="data-item" style="grid-column:1/-1;"><span class="data-label">' + escapeHtml(k) + '</span>' + renderNestedBlock(v, k) + '</div>';
+    }
+  });
+
+  html += '</div>';
+  return html;
+}
+
+// ===== PICK SUMMARY FIELDS (HEURÍSTICA) =====
+function pickSummaryFields(o) {
+  var candidates = [];
+  var priorityKeys = ['id', 'name', 'title', 'status', 'total', 'grand_total', 'amount', 'price', 
+    'customer', 'buyer', 'cliente', 'email', 'date', 'created_at', 'updated_at',
+    'increment_id', 'orderNumber', 'Codigo', 'PedidoId', 'external_id', 'channel', 'type'];
+
+  // Fase 1: Campos simples no nível raiz
+  priorityKeys.forEach(function(pk) {
+    Object.keys(o).forEach(function(k) {
+      if (k === '_id' || k === '_hub') return;
+      if (k.toLowerCase() === pk.toLowerCase() && o[k] !== null && o[k] !== undefined && typeof o[k] !== 'object') {
+        candidates.push({key: k, value: o[k], priority: 1});
+      }
+    });
+  });
+
+  Object.keys(o).forEach(function(k) {
+    if (k === '_id' || k === '_hub') return;
+    var already = candidates.some(function(c) { return c.key === k; });
+    if (!already && candidates.length < 8) {
+      var v = o[k];
+      if (typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean') {
+        candidates.push({key: k, value: v, priority: 2});
+      }
+    }
+  });
+
+  // Fase 2: Se não encontrou campos simples, tenta extrair do primeiro objeto/array
+  if (candidates.length === 0) {
+    var firstKey = Object.keys(o).find(function(k) { return k !== '_id' && k !== '_hub'; });
+    if (firstKey) {
+      var firstVal = o[firstKey];
+      if (Array.isArray(firstVal) && firstVal.length > 0 && typeof firstVal[0] === 'object') {
+        // Array de objetos → extrai do primeiro item
+        candidates = pickSummaryFields(firstVal[0]);
+        // Prefixa as chaves
+        candidates.forEach(function(c) { c.key = firstKey + '[0].' + c.key; });
+      } else if (typeof firstVal === 'object' && firstVal !== null) {
+        // Objeto aninhado → extrai recursivamente
+        candidates = pickSummaryFields(firstVal);
+        // Prefixa as chaves
+        candidates.forEach(function(c) { c.key = firstKey + '.' + c.key; });
+      }
+    }
+  }
+
+  return candidates.slice(0, 8);
+}
+
+// ===== HELPERS DO GENERIC =====
+
+function pickSummaryFields(o) {
+  // Heurística: pega até 8 campos "mais importantes"
+  var candidates = [];
+  var priorityKeys = ['id', 'name', 'status', 'total', 'grand_total', 'amount', 'price', 
+    'customer', 'buyer', 'cliente', 'email', 'date', 'created_at', 'updated_at',
+    'increment_id', 'orderNumber', 'Codigo', 'PedidoId', 'external_id', 'channel'];
+  
+  // Primeiro: campos de alta prioridade
+  priorityKeys.forEach(function(pk) {
+    Object.keys(o).forEach(function(k) {
+      if (k === '_id' || k === '_hub') return;
+      if (k.toLowerCase() === pk.toLowerCase() && o[k] !== null && o[k] !== undefined) {
+        candidates.push({key: k, value: o[k], priority: 1});
+      }
+    });
+  });
+  
+  // Depois: mais campos até completar 8
+  Object.keys(o).forEach(function(k) {
+    if (k === '_id' || k === '_hub') return;
+    var already = candidates.some(function(c) { return c.key === k; });
+    if (!already && candidates.length < 8) {
+      var v = o[k];
+      if (typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean') {
+        candidates.push({key: k, value: v, priority: 2});
+      }
+    }
+  });
+  
+  return candidates.slice(0, 8);
+}
+
+// ===== GENERIC RENDERER (qualquer JSON) - VERSÃO CORRIGIDA =====
+function renderGeneric(o, container) {
+  // Detecta se o JSON é "array-first" (só tem 1 chave que é array)
+  var keys = Object.keys(o).filter(function(k) { return k !== '_id' && k !== '_hub'; });
+  var isArrayFirst = keys.length === 1 && Array.isArray(o[keys[0]]);
+
+  // RESUMO
+  var summaryHtml = '<div class="summary-bar">';
+
+  if (isArrayFirst) {
+    // Mostra info sobre o array principal
+    var arrKey = keys[0];
+    var arr = o[arrKey];
+    summaryHtml += '<div class="sum-item"><span class="sum-label">estrutura</span><span class="sum-value">Array: ' + escapeHtml(arrKey) + '</span></div>';
+    summaryHtml += '<div class="sum-item"><span class="sum-label">total de itens</span><span class="sum-value">' + arr.length + '</span></div>';
+    if (arr.length > 0 && typeof arr[0] === 'object') {
+      summaryHtml += '<div class="sum-item"><span class="sum-label">campos por item</span><span class="sum-value">' + Object.keys(arr[0]).join(', ') + '</span></div>';
+    }
+  } else {
+    // Resumo normal com campos do objeto
+    var summaryFields = pickSummaryFields(o);
+    summaryFields.forEach(function(f) {
+      summaryHtml += '<div class="sum-item">' +
+        '<span class="sum-label">' + escapeHtml(f.key) + '</span>' +
+        fmtVal(f.value, f.key) +
+      '</div>';
+    });
+  }
+
+  summaryHtml += '</div>' +
+    '<div class="export-bar">' +
+      '<button class="btn btn-sm btn-report" onclick="exportReport(\'' + o._id + '\')">📄 Exportar Relatório</button>' +
+      '<button class="btn btn-sm" onclick="exportOrder(\'' + o._id + '\')">Exportar JSON</button>' +
+    '</div>';
+
+  // CLASSIFICAÇÃO DOS CAMPOS
+  var simpleFields = [];
+  var arrayFields = [];
+  var objectFields = [];
+  var dateFields = [];
+  var moneyFields = [];
+  var idFields = [];
+  var imageFields = [];
+
+  Object.keys(o).forEach(function(k) {
+    if (k === '_id' || k === '_hub') return;
+    classifyField(k, o[k], simpleFields, arrayFields, objectFields, dateFields, moneyFields, idFields, imageFields);
+  });
+
+  // MONTA ABAS
+  var tabDefs = [];
+
+  if (isArrayFirst) {
+    // Array-first: a aba principal é o array
+    var arrKey = keys[0];
+    tabDefs.push({id: 'main_array', label: escapeHtml(arrKey) + ' (' + o[arrKey].length + ')'});
+  } else {
+    if (simpleFields.length || dateFields.length || moneyFields.length || idFields.length || imageFields.length) {
+      tabDefs.push({id: 'geral', label: 'Geral'});
+    }
+  }
+
+  objectFields.forEach(function(f) {
+    tabDefs.push({id: 'obj_' + f.key, label: f.key});
+  });
+
+  if (!isArrayFirst) {
+    arrayFields.forEach(function(f) {
+      tabDefs.push({id: 'arr_' + f.key, label: f.key + ' (' + f.value.length + ')'});
+    });
+  }
+
+  var innerTabsHtml = '<div class="inner-tabs">';
+  tabDefs.forEach(function(t, i) {
+    innerTabsHtml += '<button class="inner-tab ' + (i===0?'active':'') + '" data-tab="' + t.id + '" onclick="switchInnerTab(\'' + t.id + '\')">' + t.label + '</button>';
+  });
+  innerTabsHtml += '</div>';
+
+  // CONTEÚDO DAS ABAS
+  var contentsHtml = '';
+
+  if (isArrayFirst) {
+    // Aba principal: o array
+    var arrKey = keys[0];
+    var arr = o[arrKey];
+    contentsHtml += '<div class="inner-content active" data-content="main_array">';
+    contentsHtml += renderGenericArray(arr, arrKey);
+    contentsHtml += '</div>';
+
+    // Se houver outros campos além do array, mostra na aba Geral
+    if (simpleFields.length || objectFields.length > 0) {
+      tabDefs.push({id: 'geral', label: 'Outros campos'});
+      contentsHtml += '<div class="inner-content" data-content="geral">';
+      contentsHtml += renderGenericFields(simpleFields, dateFields, moneyFields, idFields, imageFields, objectFields);
+      contentsHtml += '</div>';
+    }
+  } else {
+    // Aba Geral normal
+    if (tabDefs.length > 0 && tabDefs[0].id === 'geral') {
+      contentsHtml += '<div class="inner-content active" data-content="geral">';
+      contentsHtml += renderGenericFields(simpleFields, dateFields, moneyFields, idFields, imageFields, []);
+      contentsHtml += '</div>';
+    } else if (tabDefs.length > 0) {
+      // Não há aba Geral, ativa a primeira aba disponível (objeto ou array)
+      contentsHtml += '<div class="inner-content active" data-content="' + tabDefs[0].id + '">';
+      if (tabDefs[0].id.indexOf('obj_') === 0) {
+        var objKey = tabDefs[0].id.replace('obj_', '');
+        var objField = objectFields.find(function(f) { return f.key === objKey; });
+        if (objField) {
+          contentsHtml += '<div class="fieldset"><div class="fieldset-title">' + escapeHtml(objField.key) + '</div>';
+          contentsHtml += renderGenericObject(objField.value, objField.key);
+          contentsHtml += '</div>';
+        }
+      } else if (tabDefs[0].id.indexOf('arr_') === 0) {
+        var arrKey2 = tabDefs[0].id.replace('arr_', '');
+        var arrField = arrayFields.find(function(f) { return f.key === arrKey2; });
+        if (arrField) {
+          contentsHtml += renderGenericArray(arrField.value, arrField.key);
+        }
+      }
+      contentsHtml += '</div>';
+    }
+  }
+
+  // Abas de Objetos
+  objectFields.forEach(function(f) {
+    contentsHtml += '<div class="inner-content" data-content="obj_' + f.key + '">';
+    contentsHtml += '<div class="fieldset"><div class="fieldset-title">' + escapeHtml(f.key) + '</div>';
+    contentsHtml += renderGenericObject(f.value, f.key);
+    contentsHtml += '</div></div>';
+  });
+
+  // Abas de Arrays (só se não for array-first)
+  if (!isArrayFirst) {
+    arrayFields.forEach(function(f) {
+      contentsHtml += '<div class="inner-content" data-content="arr_' + f.key + '">';
+      contentsHtml += renderGenericArray(f.value, f.key);
+      contentsHtml += '</div>';
+    });
+  }
+
+  container.innerHTML = summaryHtml + innerTabsHtml + contentsHtml;
+}
+
+// ===== CLASSIFICA UM CAMPO =====
+function classifyField(k, v, simpleFields, arrayFields, objectFields, dateFields, moneyFields, idFields, imageFields) {
+  if (v === null || v === undefined) {
+    simpleFields.push({key: k, value: v});
+  } else if (typeof v === 'boolean') {
+    simpleFields.push({key: k, value: v});
+  } else if (typeof v === 'number') {
+    if (/id$|_id$|Id$|ID$|code$|_code$|Code$|key$|uuid|hash/i.test(k)) {
+      idFields.push({key: k, value: v});
+    } else if (v > 10 && /total|price|amount|value|cost|fee|tax|discount|shipping|grand|subtotal/i.test(k)) {
+      moneyFields.push({key: k, value: v});
+    } else {
+      simpleFields.push({key: k, value: v});
+    }
+  } else if (typeof v === 'string') {
+    if (/^\d{4}-\d{2}-\d{2}/.test(v)) {
+      dateFields.push({key: k, value: v});
+    } else if (/^https?:\/\/.*\.(jpg|jpeg|png|gif|webp|svg)/i.test(v)) {
+      imageFields.push({key: k, value: v});
+    } else {
+      simpleFields.push({key: k, value: v});
+    }
+  } else if (Array.isArray(v)) {
+    if (v.length === 0) {
+      simpleFields.push({key: k, value: '[] (vazio)'});
+    } else {
+      arrayFields.push({key: k, value: v});
+    }
+  } else if (typeof v === 'object') {
+    objectFields.push({key: k, value: v});
+  }
+}
+
+// ===== RENDERIZA CAMPOS GERAIS (aba Geral) =====
+function renderGenericFields(simpleFields, dateFields, moneyFields, idFields, imageFields, objectFields) {
+  var html = '';
+
+  if (idFields.length) {
+    html += '<div class="fieldset"><div class="fieldset-title">identificadores</div><div class="data-grid">';
+    idFields.forEach(function(f) {
+      html += '<div class="data-item"><span class="data-label">' + escapeHtml(f.key) + '</span>' + fmtVal(f.value, f.key) + '</div>';
+    });
+    html += '</div></div>';
+  }
+
+  if (moneyFields.length) {
+    html += '<div class="fieldset"><div class="fieldset-title">valores monetários / numéricos</div><div class="data-grid">';
+    moneyFields.forEach(function(f) {
+      html += '<div class="data-item"><span class="data-label">' + escapeHtml(f.key) + '</span>' + fmtVal(f.value, f.key) + '</div>';
+    });
+    html += '</div></div>';
+  }
+
+  if (dateFields.length) {
+    html += '<div class="fieldset"><div class="fieldset-title">datas</div><div class="data-grid">';
+    dateFields.forEach(function(f) {
+      html += '<div class="data-item"><span class="data-label">' + escapeHtml(f.key) + '</span>' + fmtVal(f.value, f.key) + '</div>';
+    });
+    html += '</div></div>';
+  }
+
+  if (imageFields.length) {
+    html += '<div class="fieldset"><div class="fieldset-title">imagens</div><div class="data-grid">';
+    imageFields.forEach(function(f) {
+      html += '<div class="data-item"><span class="data-label">' + escapeHtml(f.key) + '</span>' + fmtVal(f.value, f.key) + '</div>';
+    });
+    html += '</div></div>';
+  }
+
+  if (simpleFields.length) {
+    html += '<div class="fieldset"><div class="fieldset-title">campos gerais</div><div class="data-grid">';
+    simpleFields.forEach(function(f) {
+      html += '<div class="data-item"><span class="data-label">' + escapeHtml(f.key) + '</span>' + fmtVal(f.value, f.key) + '</div>';
+    });
+    html += '</div></div>';
+  }
+
+  if (objectFields.length) {
+    objectFields.forEach(function(f) {
+      html += '<div class="fieldset"><div class="fieldset-title">' + escapeHtml(f.key) + '</div>';
+      html += renderGenericObject(f.value, f.key);
+      html += '</div>';
+    });
+  }
+
+  return html;
+}
+
+// ===== RENDERIZA ARRAY GENÉRICO =====
+function renderGenericArray(arr, label) {
+  if (!arr || arr.length === 0) {
+    return '<div class="empty-state">Nenhum item em ' + escapeHtml(label) + '.</div>';
+  }
+
+  var html = '';
+
+  arr.forEach(function(item, idx) {
+    if (typeof item === 'object' && item !== null) {
+      // Item é objeto → card com grid
+      html += '<div class="fieldset"><div class="fieldset-title">' + escapeHtml(label) + ' ' + (idx+1);
+
+      // Tenta pegar um nome/título para o card
+      if (item.name) html += ' - ' + escapeHtml(String(item.name));
+      else if (item.title) html += ' - ' + escapeHtml(String(item.title));
+      else if (item.id) html += ' (id: ' + escapeHtml(String(item.id)) + ')';
+
+      html += '</div>';
+      html += renderGenericObject(item, label);
+      html += '</div>';
+    } else {
+      // Item é primitivo → simples
+      html += '<div class="fieldset"><div class="fieldset-title">' + escapeHtml(label) + ' ' + (idx+1) + '</div>';
+      html += '<div class="data-grid"><div class="data-item"><span class="data-label">valor</span>' + fmtVal(item, 'valor') + '</div></div>';
+      html += '</div>';
+    }
+  });
+
+  return html;
+}
+
+// ===== RENDERIZA OBJETO GENÉRICO (RECURSIVO) =====
+function renderGenericObject(obj, parentKey) {
+  var html = '<div class="data-grid">';
+
+  Object.keys(obj).forEach(function(k) {
+    var v = obj[k];
+
+    if (v === null || v === undefined) {
+      html += '<div class="data-item"><span class="data-label">' + escapeHtml(k) + '</span>' + fmtVal(v, k) + '</div>';
+    } else if (typeof v === 'boolean') {
+      html += '<div class="data-item"><span class="data-label">' + escapeHtml(k) + '</span>' + fmtVal(v, k) + '</div>';
+    } else if (typeof v === 'number') {
+      html += '<div class="data-item"><span class="data-label">' + escapeHtml(k) + '</span>' + fmtVal(v, k) + '</div>';
+    } else if (typeof v === 'string') {
+      html += '<div class="data-item"><span class="data-label">' + escapeHtml(k) + '</span>' + fmtVal(v, k) + '</div>';
+    } else if (Array.isArray(v)) {
+      if (v.length === 0) {
+        html += '<div class="data-item" style="grid-column:1/-1;"><span class="data-label">' + escapeHtml(k) + '</span><span class="data-value null">[] (vazio)</span></div>';
+      } else if (typeof v[0] === 'object') {
+        // Array de objetos dentro de objeto → nested cards
+        html += '<div class="data-item" style="grid-column:1/-1;"><span class="data-label">' + escapeHtml(k) + ' (' + v.length + ' itens)</span>';
+        v.forEach(function(subItem, subIdx) {
+          html += '<div class="nested-object" style="margin-top:8px;">' + renderGenericObject(subItem, k) + '</div>';
+        });
+        html += '</div>';
+      } else {
+        // Array de primitivos
+        html += '<div class="data-item" style="grid-column:1/-1;"><span class="data-label">' + escapeHtml(k) + '</span><span class="data-value">' + escapeHtml(v.join(', ')) + '</span></div>';
+      }
+    } else if (typeof v === 'object') {
+      // Objeto aninhado → nested block
+      html += '<div class="data-item" style="grid-column:1/-1;"><span class="data-label">' + escapeHtml(k) + '</span>' + renderNestedBlock(v, k) + '</div>';
+    }
+  });
+
+  html += '</div>';
+  return html;
+}
+
+// ===== PICK SUMMARY FIELDS (HEURÍSTICA) =====
+function pickSummaryFields(o) {
+  var candidates = [];
+  var priorityKeys = ['id', 'name', 'title', 'status', 'total', 'grand_total', 'amount', 'price', 
+    'customer', 'buyer', 'cliente', 'email', 'date', 'created_at', 'updated_at',
+    'increment_id', 'orderNumber', 'Codigo', 'PedidoId', 'external_id', 'channel', 'type'];
+
+  // Fase 1: Campos simples no nível raiz
+  priorityKeys.forEach(function(pk) {
+    Object.keys(o).forEach(function(k) {
+      if (k === '_id' || k === '_hub') return;
+      if (k.toLowerCase() === pk.toLowerCase() && o[k] !== null && o[k] !== undefined && typeof o[k] !== 'object') {
+        candidates.push({key: k, value: o[k], priority: 1});
+      }
+    });
+  });
+
+  Object.keys(o).forEach(function(k) {
+    if (k === '_id' || k === '_hub') return;
+    var already = candidates.some(function(c) { return c.key === k; });
+    if (!already && candidates.length < 8) {
+      var v = o[k];
+      if (typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean') {
+        candidates.push({key: k, value: v, priority: 2});
+      }
+    }
+  });
+
+  // Fase 2: Se não encontrou campos simples, tenta extrair do primeiro objeto/array
+  if (candidates.length === 0) {
+    var firstKey = Object.keys(o).find(function(k) { return k !== '_id' && k !== '_hub'; });
+    if (firstKey) {
+      var firstVal = o[firstKey];
+      if (Array.isArray(firstVal) && firstVal.length > 0 && typeof firstVal[0] === 'object') {
+        // Array de objetos → extrai do primeiro item
+        candidates = pickSummaryFields(firstVal[0]);
+        // Prefixa as chaves
+        candidates.forEach(function(c) { c.key = firstKey + '[0].' + c.key; });
+      } else if (typeof firstVal === 'object' && firstVal !== null) {
+        // Objeto aninhado → extrai recursivamente
+        candidates = pickSummaryFields(firstVal);
+        // Prefixa as chaves
+        candidates.forEach(function(c) { c.key = firstKey + '.' + c.key; });
+      }
+    }
+  }
+
+  return candidates.slice(0, 8);
+}
+
 // ===== HELPERS =====
 function renderNestedBlock(obj, parentKey) {
   if (!obj || typeof obj !== 'object') return fmtVal(obj, parentKey);
@@ -2473,6 +3283,11 @@ function switchInnerTab(tabId) {
   document.querySelectorAll('.inner-content').forEach(function(c) {
     c.classList.toggle('active', c.dataset.content === tabId);
   });
+  // Salva a aba ativa para este pedido
+  if (activeOrderId && activeOrderId !== '__new__') {
+    activeInnerTabs[activeOrderId] = tabId;
+    saveState();
+  }
 }
 
 function setupDropZone() {
